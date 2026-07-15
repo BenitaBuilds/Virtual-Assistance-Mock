@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMK Virtual Assistant Training Simulator</title>
+<style>
+:root{
+  --navy:#0b2447;
+  --navy-light:#14335f;
+  --gold:#c9a227;
+  --gold-light:#e0c25e;
+  --teal:#12746b;
+  --teal-light:#1a9c8f;
+  --cream:#f7f5ef;
+  --ink:#1c2530;
+  --line:#d8d2c2;
+  --danger:#a4342a;
+  --good:#1a7a4c;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  line-height:1.5;
+}
+header.app-header{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);
+  color:#fff;
+  padding:22px 28px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:4px solid var(--gold);
+}
+header.app-header .brand{
+  display:flex;
+  flex-direction:column;
+}
+header.app-header .brand .name{
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:0.5px;
+}
+header.app-header .brand .tag{
+  font-size:12.5px;
+  color:var(--gold-light);
+  margin-top:2px;
+}
+header.app-header .status{
+  font-size:13px;
+  text-align:right;
+  color:#dfe6f0;
+}
+#facilitator-badge{
+  display:none;
+  background:var(--gold);
+  color:var(--navy);
+  font-weight:700;
+  font-size:11px;
+  padding:3px 9px;
+  border-radius:10px;
+  margin-left:8px;
+}
+main{
+  max-width:960px;
+  margin:0 auto;
+  padding:26px 20px 70px;
+}
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:24px;
+  margin-bottom:20px;
+  box-shadow:0 2px 6px rgba(11,36,71,0.06);
+}
+h1,h2,h3{color:var(--navy);}
+h2.section-title{
+  border-left:5px solid var(--teal);
+  padding-left:12px;
+  margin-top:0;
+}
+.pill{
+  display:inline-block;
+  padding:3px 11px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:600;
+  background:var(--teal);
+  color:#fff;
+}
+.pill.gold{background:var(--gold);color:var(--navy);}
+button.btn{
+  background:var(--teal);
+  color:#fff;
+  border:none;
+  padding:11px 22px;
+  border-radius:6px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.15s;
+}
+button.btn:hover{background:var(--teal-light);}
+button.btn.secondary{
+  background:transparent;
+  color:var(--navy);
+  border:1.5px solid var(--navy);
+}
+button.btn.secondary:hover{background:var(--navy);color:#fff;}
+button.btn.gold{background:var(--gold);color:var(--navy);}
+button.btn.gold:hover{background:var(--gold-light);}
+button.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.module-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+}
+.module-card{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:18px;
+  background:#fff;
+  cursor:pointer;
+  transition:transform 0.12s, box-shadow 0.12s;
+}
+.module-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 14px rgba(11,36,71,0.12);
+  border-color:var(--teal);
+}
+.module-card .icon{font-size:26px;}
+.module-card h3{margin:8px 0 4px;font-size:16.5px;}
+.module-card p{margin:0;font-size:13px;color:#555;}
+.module-card .marks{
+  display:inline-block;
+  margin-top:8px;
+  font-size:12px;
+  color:var(--navy);
+  font-weight:700;
+}
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="time"], textarea, select{
+  width:100%;
+  padding:9px 11px;
+  border:1.5px solid var(--line);
+  border-radius:6px;
+  font-size:14.5px;
+  font-family:inherit;
+  background:#fff;
+  color:var(--ink);
+}
+textarea{resize:vertical;min-height:90px;}
+label.field-label{
+  display:block;
+  font-weight:600;
+  font-size:13.5px;
+  margin:12px 0 5px;
+  color:var(--navy);
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+.form-grid .full{grid-column:1/-1;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+.feedback{
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:7px;
+  font-size:14px;
+}
+.feedback.correct{background:#e5f4ec;border:1px solid var(--good);color:var(--good);}
+.feedback.incorrect{background:#faeae8;border:1px solid var(--danger);color:var(--danger);}
+.feedback.partial{background:#fdf4e0;border:1px solid var(--gold);color:#7a5c00;}
+.scenario-box{
+  background:var(--cream);
+  border:1px solid var(--line);
+  border-left:4px solid var(--navy);
+  padding:14px 16px;
+  border-radius:6px;
+  margin-bottom:14px;
+  font-size:14.5px;
+  white-space:pre-line;
+}
+table.cal-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:10px;}
+table.cal-table th, table.cal-table td{border:1px solid var(--line);padding:7px 9px;text-align:left;}
+table.cal-table th{background:var(--navy);color:#fff;}
+table.cal-table tr.busy td{background:#fdecea;}
+.progress-bar{
+  height:8px;background:#e6e2d4;border-radius:4px;overflow:hidden;margin:10px 0 4px;
+}
+.progress-bar-fill{height:100%;background:var(--teal);transition:width 0.3s;}
+.top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.top-nav a{color:var(--teal);cursor:pointer;font-size:13.5px;font-weight:600;text-decoration:none;}
+.inbox-row{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px;background:#fff;
+}
+.inbox-row .meta{flex:1;}
+.inbox-row .meta .subj{font-weight:600;font-size:14px;}
+.inbox-row .meta .from{font-size:12.5px;color:#666;}
+.inbox-row select{width:150px;}
+.timer-chip{
+  font-size:12.5px;background:var(--navy);color:#fff;padding:4px 10px;border-radius:12px;
+}
+#cert-canvas-wrap{text-align:center;}
+.cert{
+  border:10px solid var(--gold);
+  padding:40px 30px;
+  background:#fffdf6;
+  position:relative;
+  max-width:720px;
+  margin:0 auto;
+}
+.cert::before{
+  content:"";
+  position:absolute;inset:8px;
+  border:2px solid var(--navy);
+}
+.cert h1{font-size:28px;margin-bottom:4px;letter-spacing:1px;}
+.cert .sub{color:var(--teal);font-weight:600;margin-bottom:22px;}
+.cert .student-name{font-size:26px;color:var(--navy);font-weight:700;margin:16px 0;border-bottom:2px solid var(--gold);display:inline-block;padding-bottom:6px;}
+.cert .details{font-size:14px;margin-top:18px;color:#444;}
+.cert .sign{margin-top:34px;display:flex;justify-content:space-between;font-size:13px;}
+.sig-line{border-top:1px solid #444;width:200px;margin-top:26px;padding-top:6px;}
+footer.small{text-align:center;font-size:12px;color:#888;margin-top:30px;}
+.locked-overlay{
+  position:fixed;inset:0;background:rgba(11,36,71,0.85);
+  display:flex;align-items:center;justify-content:center;z-index:50;
+}
+.locked-box{background:#fff;padding:28px;border-radius:10px;max-width:340px;width:90%;text-align:center;}
+.hidden{display:none !important;}
+.small-note{font-size:12px;color:#777;margin-top:6px;}
+
+@media(max-width:480px){
+  header.app-header{padding:16px 16px;flex-direction:column;align-items:flex-start;gap:6px;}
+  header.app-header .status{text-align:left;}
+  main{padding:16px 12px 60px;}
+  .card{padding:16px;}
+  .inbox-row{flex-direction:column;align-items:stretch;gap:8px;}
+  .inbox-row select{width:100%;}
+  .cert{padding:24px 16px;}
+  .cert h1{font-size:22px;}
+  .cert .student-name{font-size:20px;}
+  .cert .sign{flex-direction:column;gap:16px;}
+  .sig-line{width:100%;}
+  table.cal-table{font-size:12px;}
+  button.btn{width:100%;}
+  .btn-row{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="name">SMK Virtual Assistant Training Simulator</div>
+    <div class="tag">Practice + Certification &middot; Managing Dr. Sandra's Workload</div>
+  </div>
+  <div class="status">
+    <span id="mode-indicator">Menu</span>
+    <span id="facilitator-badge">FACILITATOR MODE</span>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="small">SMK Consulting and Training Agency &middot; Offline Training Tool &middot; Certificate signed by Benita Emmanuel</footer>
+
+<script>
+/* ============================================================
+   SMK VIRTUAL ASSISTANT TRAINING SIMULATOR
+   Offline, single-file, deterministic scoring engine
+   Facilitator password: SMK2025
+   ============================================================ */
+
+const FACILITATOR_PASSWORD = "SMK2025";
+
+const MODULES = [
+  { id:'calendar',  name:'Google Calendar Management', icon:'&#128197;', marks:25, desc:"Manage Dr. Sandra's schedule across timezones without conflicts." },
+  { id:'email',     name:'Email Management & Filtering', icon:'&#128231;', marks:20, desc:'Sort the inbox correctly and draft replies in the right tone.' },
+  { id:'dataentry', name:'Data Entry', icon:'&#128221;', marks:15, desc:'Clean up messy client records and catch the typos.' },
+  { id:'asana',     name:'Asana Task Management', icon:'&#9989;', marks:15, desc:'Create and assign tasks with correct due dates.' },
+  { id:'signature', name:'Email Signature Builder', icon:'&#9997;', marks:10, desc:'Build a complete, professional signature block.' },
+  { id:'notes',     name:'Meeting Notes & Itinerary', icon:'&#128203;', marks:15, desc:'Capture accurate notes and prepare a travel itinerary.' }
+];
+const TOTAL_MARKS = MODULES.reduce((s,m)=>s+m.marks,0); // 100
+const PASS_PERCENT = 70;
+
+let state = {
+  mode:'menu',            // menu | practice-module | exam | results | certificate
+  facilitatorMode:false,
+  studentName:'',
+  examOrder:[],
+  examIndex:0,
+  examAnswers:{},         // moduleId -> answer payload
+  examScores:{},          // moduleId -> {score,max,detail}
+  practiceModuleId:null,
+  practiceAttempt:0
+};
+
+const app = document.getElementById('app');
+const modeIndicator = document.getElementById('mode-indicator');
+const facilitatorBadge = document.getElementById('facilitator-badge');
+
+function setMode(m){
+  state.mode = m;
+  modeIndicator.textContent = m==='menu' ? 'Menu' : m==='exam' ? 'Certification Exam' : m==='results' ? 'Results' : m==='certificate' ? 'Certificate' : 'Practice';
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+/* ---------- keyword grading helper (fixes past stopword bugs: whole-word match, no over-stripping) ---------- */
+function keywordScore(text, keywordGroups, maxMarks){
+  // keywordGroups: array of arrays; each inner array is a set of acceptable synonyms for ONE required concept
+  const t = (text||'').toLowerCase();
+  let hits = 0;
+  keywordGroups.forEach(group=>{
+    const found = group.some(kw=>{
+      const lower = kw.toLowerCase();
+      const escaped = lower.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      // only anchor a side with \b if that side is actually a word character;
+      // otherwise \b can never match (e.g. a phone number starting with "+")
+      const startsWord = /\w/.test(lower[0]);
+      const endsWord = /\w/.test(lower[lower.length-1]);
+      const pattern = (startsWord?'\\b':'') + escaped + (endsWord?'\\b':'');
+      const re = new RegExp(pattern,'i');
+      return re.test(t);
+    });
+    if(found) hits++;
+  });
+  const score = Math.round((hits/keywordGroups.length)*maxMarks*10)/10;
+  return { score, hits, total:keywordGroups.length };
+}
+
+function fieldMatch(input, correct, mode){
+  if(input==null) input='';
+  const a = input.trim().toLowerCase();
+  const b = correct.trim().toLowerCase();
+  if(mode==='digits'){
+    return a.replace(/\D/g,'') === b.replace(/\D/g,'');
+  }
+  if(mode==='loose'){
+    return a.replace(/[^a-z0-9]/g,'') === b.replace(/[^a-z0-9]/g,'');
+  }
+  return a === b;
+}
+
+/* ============================================================
+   DATA BANKS
+   ============================================================ */
+
+const CALENDAR_QUESTIONS = [
+  {
+    scenario:"Dr. Sandra (based in Lagos, WAT) has today's calendar:\n09:00-09:45 Client session - Amaka\n10:00-10:30 Team huddle\n11:00-12:30 Workshop prep (blocked)\n13:00-14:00 Lunch (blocked)\n15:00-15:45 Client session - Tunde\n\nHouse rule: every session needs a 15-minute buffer before and after.\n\nA new client, James, is in New York (EST, which is 6 hours behind WAT). He can only do a 45-minute consult between 9:00 AM and 11:00 AM EST. What is the correct WAT slot to book him?",
+    options:["15:00 WAT","16:00 WAT","18:00 WAT","09:00 WAT"],
+    correct:"16:00 WAT",
+    explain:"9:00-11:00 AM EST converts to 15:00-17:00 WAT. The 15:00 slot is taken and needs a 15-min buffer after (until 16:00), so 16:00-16:45 WAT is the only slot that fits inside the window and respects the buffer."
+  },
+  {
+    scenario:"A long-standing VIP client asks for an urgent session today. The only truly free internal slot is 10:00-10:30, currently held by a team huddle (an internal, flexible meeting). What is the correct VA action?",
+    options:["Cancel the client's request since the calendar is full","Double-book the VIP over the team huddle without telling anyone","Check with the team about moving the huddle, then offer the VIP that slot once confirmed","Delete the team huddle permanently without asking"],
+    correct:"Check with the team about moving the huddle, then offer the VIP that slot once confirmed",
+    explain:"Internal meetings can flex, but only after checking with the people affected. Never double-book silently or delete a meeting unilaterally."
+  },
+  {
+    scenario:"Two different clients both ask for the 11:00-12:30 slot, which is blocked as 'Workshop prep'. What should the VA do?",
+    options:["Book one client into it since prep isn't a real meeting","Explain the slot is protected prep time and offer both clients alternative times","Book both clients into the same slot together","Delete the workshop prep block for good"],
+    correct:"Explain the slot is protected prep time and offer both clients alternative times",
+    explain:"Protected work blocks exist for a reason. The VA should offer alternatives rather than overriding them without Dr. Sandra's approval."
+  },
+  {
+    scenario:"Dr. Sandra runs a recurring workshop every Thursday from 14:00-16:00. A one-off client meeting request comes in for next Thursday at 14:30. Correct handling?",
+    options:["Book it anyway since one-off requests are more urgent","Decline that time and offer the client a slot outside the recurring block","Cancel the recurring workshop for that week without asking","Book both at the same time and let them overlap"],
+    correct:"Decline that time and offer the client a slot outside the recurring block",
+    explain:"Recurring commitments should be respected the same as any other booked time. Offer the client an alternative slot instead of overriding it."
+  },
+  {
+    scenario:"House rule: 15-minute buffer required before and after every session. A session ends at 09:45. A new request wants to start right at 09:45. What is the earliest correct start time for the new session?",
+    options:["09:45","10:00","09:50","09:55"],
+    correct:"10:00",
+    explain:"A full 15-minute buffer after a 09:45 end means the next session cannot start before 10:00."
+  }
+];
+
+const EMAIL_SORT_ITEMS = [
+  { subject:"URGENT: Server down, client portal inaccessible", from:"IT Support", correct:"Urgent" },
+  { subject:"Following up on our call last week about coaching packages", from:"Amaka O.", correct:"Follow-up" },
+  { subject:"50% OFF everything this weekend only!!!", from:"noreply@dealsblast.com", correct:"Newsletter/Spam" },
+  { subject:"Invoice attached for March consulting hours", from:"Tunde A. (Client)", correct:"Client" },
+  { subject:"Team lunch this Friday, are you in?", from:"Chidinma (colleague)", correct:"Internal" }
+];
+const EMAIL_FOLDERS = ["Urgent","Client","Follow-up","Newsletter/Spam","Internal"];
+
+const EMAIL_DRAFT_SCENARIOS = [
+  {
+    title:"Frustrated client - delayed delivery",
+    scenario:"A client, Mr. Eze, emails: \"I paid for the express package two weeks ago and I still have not received the materials. This is unacceptable and I want to know what is going on.\" Draft a reply.",
+    maxMarks:5,
+    keywordGroups:[
+      ["sorry","apologize","apologise"],
+      ["understand","frustrat","inconvenien"],
+      ["update","status","check"],
+      ["by","timeline","within","days","today","tomorrow"]
+    ]
+  },
+  {
+    title:"Casual inquiry - IELTS coaching schedule",
+    scenario:"A prospective student messages: \"hi! do you have any ielts speaking classes this month? how do i sign up?\" Draft a reply.",
+    maxMarks:5,
+    keywordGroups:[
+      ["hi","hello","dear","thanks for"],
+      ["schedule","available","class","session"],
+      ["book","sign up","register","reply","contact"],
+      ["regards","best","thank you"]
+    ]
+  }
+];
+
+const DATA_ENTRY_RECORDS = [
+  {
+    source:"jonh doe , email: JDOE@@gmail,com , phone: 080-123-4567-, joined : 12/3/25",
+    fields:[
+      {label:"Full Name", key:"name", correct:"John Doe", mode:"loose"},
+      {label:"Email", key:"email", correct:"jdoe@gmail.com", mode:"loose"},
+      {label:"Phone", key:"phone", correct:"0801234567", mode:"digits", correctDigits:"0801234567"},
+      {label:"Date Joined (DD/MM/YYYY)", key:"date", correct:"12/03/2025", mode:"exact"}
+    ]
+  },
+  {
+    source:"Name: chioma  Okeke , Email- chioma.okeke@@yahoo.co, Ph 0703 3345 671 , Joined 5-1-2025",
+    fields:[
+      {label:"Full Name", key:"name", correct:"Chioma Okeke", mode:"loose"},
+      {label:"Email", key:"email", correct:"chioma.okeke@yahoo.co", mode:"loose"},
+      {label:"Phone", key:"phone", correct:"07033345671", mode:"digits", correctDigits:"07033345671"},
+      {label:"Date Joined (DD/MM/YYYY)", key:"date", correct:"05/01/2025", mode:"exact"}
+    ]
+  },
+  {
+    source:"NAME:  Bright  Ade , email:bright_ade@@outlook..com , telephone 0812-234-9090, join date : 20/11/24",
+    fields:[
+      {label:"Full Name", key:"name", correct:"Bright Ade", mode:"loose"},
+      {label:"Email", key:"email", correct:"bright_ade@outlook.com", mode:"loose"},
+      {label:"Phone", key:"phone", correct:"08122349090", mode:"digits", correctDigits:"08122349090"},
+      {label:"Date Joined (DD/MM/YYYY)", key:"date", correct:"20/11/2024", mode:"exact"}
+    ]
+  }
+];
+
+const ASANA_SCENARIOS = [
+  {
+    request:"Email from Dr. Sandra: \"Please add a task for Chidinma to design the new workshop flyer. It needs to be done before the workshop on the 20th, so let's say due the 18th.\"",
+    correct:{ name:"Design workshop flyer", assignee:"Chidinma", due:"18" }
+  },
+  {
+    request:"Slack message: \"Can we get a task for Tunde to send the invoice to the client? Needs to go out by end of day Friday.\"",
+    correct:{ name:"Send invoice to client", assignee:"Tunde", due:"Friday" }
+  },
+  {
+    request:"Email: \"Reminder that someone needs to book Dr. Sandra's flight for the Abuja conference. Assign it to Amaka, due end of this week.\"",
+    correct:{ name:"Book flight for Abuja conference", assignee:"Amaka", due:"end of this week" }
+  }
+];
+
+const SIGNATURE_INFO = {
+  name:"Sandra Achebe",
+  title:"Business Coach & Workshop Facilitator",
+  company:"Sandra Achebe Coaching",
+  phone:"+234 803 555 0192",
+  email:"hello@sandraachebe.com",
+  website:"www.sandraachebe.com"
+};
+
+const NOTES_SCENARIO = {
+  transcript:"Meeting: Dr. Sandra & Marketing team, 10 minutes.\nDr. Sandra: We need the new client onboarding workshop ready by the 25th. Chidinma will design the flyer, Tunde will handle registrations on Eventbrite, and I will record the intro video myself by next Monday. Let's follow up again in one week.",
+  maxMarks:8,
+  keywordGroups:[
+    ["onboarding","workshop"],
+    ["25th","25"],
+    ["chidinma","flyer"],
+    ["tunde","eventbrite","registration"],
+    ["monday","intro video","video"],
+    ["follow up","follow-up","next week"],
+    ["dr. sandra","sandra"],
+    ["marketing"]
+  ]
+};
+
+const ITINERARY_SCENARIO = {
+  details:"Dr. Sandra is travelling to Abuja for a conference.\nFlight: Air Peace, Lagos to Abuja, departs 07:40, arrives 08:45, 14 March.\nHotel: Transcorp Hilton Abuja, check-in from 12:00.\nConference: Leadership Summit, starts 14:00 at the same hotel.\nReturn flight: 16 March, 18:20 departure.\n\nWrite a short itinerary for Dr. Sandra covering these details.",
+  maxMarks:7,
+  keywordGroups:[
+    ["air peace"],
+    ["07:40","7:40"],
+    ["transcorp hilton","hilton"],
+    ["14:00","2:00 pm","2pm"],
+    ["16 march","march 16"],
+    ["18:20","6:20 pm"],
+    ["leadership summit"]
+  ]
+};
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+function render(){
+  facilitatorBadge.style.display = state.facilitatorMode ? 'inline-block' : 'none';
+  if(state.mode==='menu') return renderMenu();
+  if(state.mode==='practice-hub') return renderPracticeHub();
+  if(state.mode==='practice-module') return renderPracticeModule();
+  if(state.mode==='exam-intro') return renderExamIntro();
+  if(state.mode==='exam') return renderExamModule();
+  if(state.mode==='results') return renderResults();
+  if(state.mode==='certificate') return renderCertificate();
+}
+
+/* ============================================================
+   MENU
+   ============================================================ */
+function renderMenu(){
+  setMode('menu');
+  app.innerHTML = `
+    <div class="card">
+      <h1>Welcome, Virtual Assistant Trainee</h1>
+      <p>This simulator gives you hands-on practice managing <strong>Dr. Sandra's</strong> workload: her calendar, inbox, data records, tasks, signature and meeting notes. Practice each skill as many times as you like, then attempt the timed certification exam when you're ready.</p>
+      <div class="btn-row">
+        <button class="btn" onclick="goPracticeHub()">Start Practice Mode</button>
+        <button class="btn gold" onclick="goExamIntro()">Start Certification Exam</button>
+        <button class="btn secondary" onclick="toggleFacilitator()">${state.facilitatorMode ? 'Exit Facilitator Mode' : 'Facilitator Mode'}</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2 class="section-title">What you'll practice</h2>
+      <div class="module-grid">
+        ${MODULES.map(m=>`
+          <div class="module-card" onclick="startPractice('${m.id}')">
+            <div class="icon">${m.icon}</div>
+            <h3>${m.name}</h3>
+            <p>${m.desc}</p>
+            <span class="marks">${m.marks} marks in exam</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function toggleFacilitator(){
+  if(state.facilitatorMode){
+    state.facilitatorMode = false;
+    render();
+    return;
+  }
+  const pw = prompt("Enter facilitator password:");
+  if(pw === FACILITATOR_PASSWORD){
+    state.facilitatorMode = true;
+    render();
+  } else if(pw !== null){
+    alert("Incorrect password.");
+  }
+}
+
+/* ============================================================
+   PRACTICE HUB
+   ============================================================ */
+function goPracticeHub(){ state.mode='practice-hub'; render(); }
+
+function renderPracticeHub(){
+  setMode('practice-module');
+  app.innerHTML = `
+    <div class="top-nav"><a onclick="goMenu()">&larr; Back to menu</a><span class="pill">Practice Mode</span></div>
+    <div class="card">
+      <h2 class="section-title">Choose a skill to practice</h2>
+      <p class="small-note">Practice mode does not affect your certification score. Repeat as many times as you like.</p>
+      <div class="module-grid">
+        ${MODULES.map(m=>`
+          <div class="module-card" onclick="startPractice('${m.id}')">
+            <div class="icon">${m.icon}</div>
+            <h3>${m.name}</h3>
+            <p>${m.desc}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function goMenu(){ state.mode='menu'; render(); }
+
+function startPractice(moduleId){
+  state.practiceModuleId = moduleId;
+  state.practiceAttempt = 0;
+  state.mode = 'practice-module';
+  render();
+}
+
+function renderPracticeModule(){
+  const m = MODULES.find(x=>x.id===state.practiceModuleId);
+  app.innerHTML = `<div class="top-nav"><a onclick="goPracticeHub()">&larr; All practice modules</a><span class="pill">Practice: ${m.name}</span></div><div id="module-slot"></div>`;
+  renderModuleBody('practice', m.id, document.getElementById('module-slot'));
+}
+
+/* ============================================================
+   GENERIC MODULE ROUTER
+   ============================================================ */
+function renderModuleBody(mode, moduleId, container){
+  if(moduleId==='calendar')  return moduleCalendar(mode, container);
+  if(moduleId==='email')     return moduleEmail(mode, container);
+  if(moduleId==='dataentry') return moduleDataEntry(mode, container);
+  if(moduleId==='asana')     return moduleAsana(mode, container);
+  if(moduleId==='signature') return moduleSignature(mode, container);
+  if(moduleId==='notes')     return moduleNotes(mode, container);
+}
+
+function moduleFooter(mode, onSubmitLabel, onSubmit){
+  if(mode==='practice'){
+    return `<div class="btn-row">
+      <button class="btn" id="mod-check-btn">Check My Answers</button>
+      <button class="btn secondary" id="mod-retry-btn">Try a Fresh Set</button>
+    </div>
+    <div id="mod-feedback"></div>`;
+  }
+  return `<div class="btn-row"><button class="btn gold" id="mod-check-btn">${onSubmitLabel||'Submit & Continue'}</button></div>
+  <div id="mod-feedback"></div>`;
+}
+
+/* ============================================================
+   MODULE: CALENDAR
+   ============================================================ */
+function moduleCalendar(mode, container){
+  const qs = shuffle(CALENDAR_QUESTIONS).slice(0, mode==='exam' ? 5 : 3);
+  const optionOrders = qs.map(q=>shuffle(q.options));
+
+  container.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Google Calendar Management</h2>
+      <p class="small-note">You are managing Dr. Sandra's Google Calendar. Read each scenario carefully, including time zones and buffer rules.</p>
+      ${qs.map((q,i)=>`
+        <div class="scenario-box">${q.scenario}</div>
+        <div id="cal-q-${i}">
+          ${optionOrders[i].map((opt,oi)=>`
+            <label style="display:block;margin:6px 0;cursor:pointer;">
+              <input type="radio" name="cal-${i}" value="${encodeURIComponent(opt)}"> ${opt}
+            </label>
+          `).join('')}
+        </div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0;">
+      `).join('')}
+      ${moduleFooter(mode)}
+    </div>
+  `;
+
+  attachCommon(mode, container, ()=>{
+    let score = 0, max = 0, detailLines = [];
+    qs.forEach((q,i)=>{
+      max += 5;
+      const sel = container.querySelector(`input[name="cal-${i}"]:checked`);
+      const val = sel ? decodeURIComponent(sel.value) : null;
+      const ok = val === q.correct;
+      if(ok) score += 5;
+      if(mode==='practice'){
+        detailLines.push(`<div class="feedback ${ok?'correct':'incorrect'}"><strong>Q${i+1}:</strong> ${ok?'Correct.':'Not quite.'} ${q.explain}</div>`);
+      }
+    });
+    return { score, max, html: detailLines.join('') };
+  }, ()=>startPractice('calendar'));
+}
+
+/* ============================================================
+   MODULE: EMAIL
+   ============================================================ */
+function moduleEmail(mode, container){
+  const sortItems = shuffle(EMAIL_SORT_ITEMS);
+  const draftItems = mode==='exam' ? EMAIL_DRAFT_SCENARIOS : [EMAIL_DRAFT_SCENARIOS[0]];
+
+  container.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Email Management &amp; Filtering</h2>
+      <h3>Part A &mdash; Sort the inbox</h3>
+      <p class="small-note">Assign each email to the correct folder.</p>
+      ${sortItems.map((e,i)=>`
+        <div class="inbox-row">
+          <div class="meta"><div class="subj">${e.subject}</div><div class="from">From: ${e.from}</div></div>
+          <select id="sort-${i}">
+            <option value="">Choose folder...</option>
+            ${EMAIL_FOLDERS.map(f=>`<option value="${f}">${f}</option>`).join('')}
+          </select>
+        </div>
+      `).join('')}
+      <h3 style="margin-top:22px;">Part B &mdash; Draft a reply</h3>
+      ${draftItems.map((d,i)=>`
+        <div class="scenario-box"><strong>${d.title}</strong><br>${d.scenario}</div>
+        <textarea id="draft-${i}" placeholder="Type your reply..."></textarea>
+      `).join('')}
+      ${moduleFooter(mode)}
+    </div>
+  `;
+
+  attachCommon(mode, container, ()=>{
+    let score = 0, max = 0, detailLines = [];
+    sortItems.forEach((e,i)=>{
+      max += 2;
+      const sel = container.querySelector(`#sort-${i}`).value;
+      const ok = sel === e.correct;
+      if(ok) score += 2;
+      if(mode==='practice'){
+        detailLines.push(`<div class="feedback ${ok?'correct':'incorrect'}">"${e.subject}" &rarr; correct folder: <strong>${e.correct}</strong>${ok?' (you got it right)':''}</div>`);
+      }
+    });
+    draftItems.forEach((d,i)=>{
+      const text = container.querySelector(`#draft-${i}`).value;
+      const res = keywordScore(text, d.keywordGroups, d.maxMarks);
+      score += res.score; max += d.maxMarks;
+      if(mode==='practice'){
+        detailLines.push(`<div class="feedback ${res.hits===res.total?'correct':res.hits>0?'partial':'incorrect'}"><strong>${d.title}:</strong> covered ${res.hits}/${res.total} key elements a strong reply should include (score ${res.score}/${d.maxMarks}).</div>`);
+      }
+    });
+    return { score, max, html: detailLines.join('') };
+  }, ()=>startPractice('email'));
+}
+
+/* ============================================================
+   MODULE: DATA ENTRY
+   ============================================================ */
+function moduleDataEntry(mode, container){
+  const records = mode==='exam' ? DATA_ENTRY_RECORDS : [DATA_ENTRY_RECORDS[Math.floor(Math.random()*DATA_ENTRY_RECORDS.length)]];
+  const perField = [1,2,1,1]; // name,email,phone,date out of 5 per record
+
+  container.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Data Entry</h2>
+      <p class="small-note">Below is a messy source record. Enter it cleanly and correctly into the fields.</p>
+      ${records.map((r,ri)=>`
+        <div class="scenario-box">${r.source}</div>
+        <div class="form-grid">
+          ${r.fields.map((f,fi)=>`
+            <div>
+              <label class="field-label">${f.label}</label>
+              <input type="text" id="de-${ri}-${fi}">
+            </div>
+          `).join('')}
+        </div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0;">
+      `).join('')}
+      ${moduleFooter(mode)}
+    </div>
+  `;
+
+  attachCommon(mode, container, ()=>{
+    let score = 0, max = 0, detailLines = [];
+    records.forEach((r,ri)=>{
+      r.fields.forEach((f,fi)=>{
+        const pts = perField[fi];
+        max += pts;
+        const val = container.querySelector(`#de-${ri}-${fi}`).value;
+        const correctVal = f.mode==='digits' ? f.correctDigits : f.correct;
+        const ok = fieldMatch(val, correctVal, f.mode);
+        if(ok) score += pts;
+        if(mode==='practice'){
+          detailLines.push(`<div class="feedback ${ok?'correct':'incorrect'}">${f.label}: expected <strong>${f.correct}</strong>${ok?' &mdash; correct':' &mdash; check formatting/spelling'}</div>`);
+        }
+      });
+    });
+    return { score, max, html: detailLines.join('') };
+  }, ()=>startPractice('dataentry'));
+}
+
+/* ============================================================
+   MODULE: ASANA
+   ============================================================ */
+function moduleAsana(mode, container){
+  const scenarios = mode==='exam' ? ASANA_SCENARIOS : [ASANA_SCENARIOS[Math.floor(Math.random()*ASANA_SCENARIOS.length)]];
+
+  container.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Asana Task Management</h2>
+      <p class="small-note">Read each request and create the task correctly: name, assignee, and due date.</p>
+      ${scenarios.map((s,i)=>`
+        <div class="scenario-box">${s.request}</div>
+        <div class="form-grid">
+          <div><label class="field-label">Task Name</label><input type="text" id="asana-name-${i}"></div>
+          <div><label class="field-label">Assignee</label><input type="text" id="asana-assignee-${i}"></div>
+          <div class="full"><label class="field-label">Due Date</label><input type="text" id="asana-due-${i}" placeholder="e.g. Friday, or 18th, or end of this week"></div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0;">
+      `).join('')}
+      ${moduleFooter(mode)}
+    </div>
+  `;
+
+  attachCommon(mode, container, ()=>{
+    let score = 0, max = 0, detailLines = [];
+    scenarios.forEach((s,i)=>{
+      max += 5;
+      const name = container.querySelector(`#asana-name-${i}`).value;
+      const assignee = container.querySelector(`#asana-assignee-${i}`).value;
+      const due = container.querySelector(`#asana-due-${i}`).value;
+      let pts = 0;
+      const nameOk = fieldMatch(name, s.correct.name, 'loose') ||
+        s.correct.name.toLowerCase().split(' ').every(w=>name.toLowerCase().includes(w));
+      const assigneeOk = fieldMatch(assignee, s.correct.assignee, 'loose');
+      const dueWords = s.correct.due.toLowerCase().split(' ').filter(w=>!['the','this','of'].includes(w));
+      const dueOk = due.toLowerCase().includes(s.correct.due.toLowerCase()) ||
+        fieldMatch(due, s.correct.due, 'loose') ||
+        dueWords.every(w=>due.toLowerCase().includes(w));
+      if(nameOk) pts += 2;
+      if(assigneeOk) pts += 1.5;
+      if(dueOk) pts += 1.5;
+      score += pts;
+      if(mode==='practice'){
+        detailLines.push(`<div class="feedback ${pts===5?'correct':pts>0?'partial':'incorrect'}">Expected task: <strong>${s.correct.name}</strong>, assignee <strong>${s.correct.assignee}</strong>, due <strong>${s.correct.due}</strong>. You scored ${pts}/5.</div>`);
+      }
+    });
+    return { score, max, html: detailLines.join('') };
+  }, ()=>startPractice('asana'));
+}
+
+/* ============================================================
+   MODULE: EMAIL SIGNATURE
+   ============================================================ */
+function moduleSignature(mode, container){
+  container.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Email Signature Builder</h2>
+      <p class="small-note">Use the details below to build a complete, professional email signature.</p>
+      <div class="scenario-box">Name: ${SIGNATURE_INFO.name}
+Title: ${SIGNATURE_INFO.title}
+Company: ${SIGNATURE_INFO.company}
+Phone: ${SIGNATURE_INFO.phone}
+Email: ${SIGNATURE_INFO.email}
+Website: ${SIGNATURE_INFO.website}</div>
+      <label class="field-label">Your Signature</label>
+      <textarea id="sig-input" style="min-height:150px;" placeholder="Build the signature here..."></textarea>
+      ${moduleFooter(mode)}
+    </div>
+  `;
+
+  attachCommon(mode, container, ()=>{
+    const text = container.querySelector('#sig-input').value;
+    const groups = [
+      [SIGNATURE_INFO.name],
+      [SIGNATURE_INFO.title],
+      [SIGNATURE_INFO.company],
+      [SIGNATURE_INFO.phone],
+      [SIGNATURE_INFO.email],
+      [SIGNATURE_INFO.website]
+    ];
+    const res = keywordScore(text, groups, 10);
+    let html = '';
+    if(mode==='practice'){
+      html = `<div class="feedback ${res.hits===res.total?'correct':res.hits>0?'partial':'incorrect'}">Your signature includes ${res.hits}/${res.total} required elements (name, title, company, phone, email, website). Score: ${res.score}/10.</div>`;
+    }
+    return { score: res.score, max: 10, html };
+  }, ()=>startPractice('signature'));
+}
+
+/* ============================================================
+   MODULE: MEETING NOTES & ITINERARY
+   ============================================================ */
+function moduleNotes(mode, container){
+  container.innerHTML = `
+    <div class="card">
+      <h2 class="section-title">Meeting Notes &amp; Itinerary</h2>
+      <h3>Part A &mdash; Meeting Notes</h3>
+      <div class="scenario-box">${NOTES_SCENARIO.transcript}</div>
+      <label class="field-label">Write your meeting notes</label>
+      <textarea id="notes-input" style="min-height:120px;"></textarea>
+
+      <h3 style="margin-top:22px;">Part B &mdash; Itinerary</h3>
+      <div class="scenario-box">${ITINERARY_SCENARIO.details}</div>
+      <label class="field-label">Write the itinerary</label>
+      <textarea id="itin-input" style="min-height:120px;"></textarea>
+
+      ${moduleFooter(mode)}
+    </div>
+  `;
+
+  attachCommon(mode, container, ()=>{
+    const notesText = container.querySelector('#notes-input').value;
+    const itinText = container.querySelector('#itin-input').value;
+    const r1 = keywordScore(notesText, NOTES_SCENARIO.keywordGroups, NOTES_SCENARIO.maxMarks);
+    const r2 = keywordScore(itinText, ITINERARY_SCENARIO.keywordGroups, ITINERARY_SCENARIO.maxMarks);
+    let html = '';
+    if(mode==='practice'){
+      html = `<div class="feedback ${r1.hits===r1.total?'correct':r1.hits>0?'partial':'incorrect'}">Meeting notes covered ${r1.hits}/${r1.total} key points (score ${r1.score}/${NOTES_SCENARIO.maxMarks}).</div>
+      <div class="feedback ${r2.hits===r2.total?'correct':r2.hits>0?'partial':'incorrect'}">Itinerary covered ${r2.hits}/${r2.total} key details (score ${r2.score}/${ITINERARY_SCENARIO.maxMarks}).</div>`;
+    }
+    return { score: r1.score + r2.score, max: NOTES_SCENARIO.maxMarks + ITINERARY_SCENARIO.maxMarks, html };
+  }, ()=>startPractice('notes'));
+}
+
+/* ============================================================
+   COMMON SUBMIT/CHECK WIRING
+   ============================================================ */
+function attachCommon(mode, container, scoreFn, retryFn){
+  const checkBtn = container.querySelector('#mod-check-btn');
+  const retryBtn = container.querySelector('#mod-retry-btn');
+  const feedbackEl = container.querySelector('#mod-feedback');
+
+  checkBtn.addEventListener('click', ()=>{
+    const result = scoreFn();
+    if(mode==='practice'){
+      feedbackEl.innerHTML = `<div class="feedback ${result.score>=result.max*0.8?'correct':result.score>0?'partial':'incorrect'}"><strong>Score: ${Math.round(result.score*10)/10} / ${result.max}</strong></div>` + result.html;
+      checkBtn.disabled = true;
+      setTimeout(()=>{ checkBtn.disabled = false; }, 400);
+    } else {
+      // exam mode: lock in and advance
+      state.examScores[state.examOrder[state.examIndex]] = { score: result.score, max: result.max };
+      advanceExam();
+    }
+  });
+
+  if(retryBtn){
+    retryBtn.addEventListener('click', retryFn);
+  }
+}
+
+/* ============================================================
+   EXAM FLOW
+   ============================================================ */
+function goExamIntro(){ state.mode = 'exam-intro'; render(); }
+
+function renderExamIntro(){
+  setMode('exam-intro');
+  app.innerHTML = `
+    <div class="top-nav"><a onclick="goMenu()">&larr; Back to menu</a></div>
+    <div class="card">
+      <h1>Virtual Assistant Certification Exam</h1>
+      <p>This exam covers all six skill areas, worth ${TOTAL_MARKS} marks in total. Each module is submitted once, in order, and cannot be revisited. A score of ${PASS_PERCENT}% or higher earns your certificate.</p>
+      <ul>
+        ${MODULES.map(m=>`<li>${m.name} &mdash; ${m.marks} marks</li>`).join('')}
+      </ul>
+      <label class="field-label">Enter your full name as it should appear on your certificate</label>
+      <input type="text" id="exam-name-input" placeholder="Full name">
+      <div class="btn-row">
+        <button class="btn gold" id="begin-exam-btn">Begin Exam</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('begin-exam-btn').addEventListener('click', ()=>{
+    const name = document.getElementById('exam-name-input').value.trim();
+    if(!name){ alert('Please enter your name before starting.'); return; }
+    state.studentName = name;
+    state.examOrder = MODULES.map(m=>m.id);
+    state.examIndex = 0;
+    state.examScores = {};
+    state.mode = 'exam';
+    render();
+  });
+}
+
+function renderExamModule(){
+  setMode('exam');
+  const moduleId = state.examOrder[state.examIndex];
+  const m = MODULES.find(x=>x.id===moduleId);
+  const pct = Math.round((state.examIndex/state.examOrder.length)*100);
+  app.innerHTML = `
+    <div class="card" style="padding-bottom:14px;">
+      <div class="top-nav">
+        <span class="pill gold">Section ${state.examIndex+1} of ${state.examOrder.length}: ${m.name}</span>
+        <span class="timer-chip">${m.marks} marks</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div id="module-slot"></div>
+  `;
+  renderModuleBody('exam', moduleId, document.getElementById('module-slot'));
+}
+
+function advanceExam(){
+  state.examIndex++;
+  if(state.examIndex >= state.examOrder.length){
+    state.mode = 'results';
+  }
+  render();
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+function renderResults(){
+  setMode('results');
+  let totalScore = 0;
+  MODULES.forEach(m=>{
+    const s = state.examScores[m.id];
+    if(s) totalScore += s.score;
+  });
+  const percent = Math.round((totalScore/TOTAL_MARKS)*1000)/10;
+  const passed = percent >= PASS_PERCENT;
+
+  app.innerHTML = `
+    <div class="card">
+      <h1>Results for ${state.studentName}</h1>
+      <h2 style="color:${passed?'var(--good)':'var(--danger)'};">${Math.round(totalScore*10)/10} / ${TOTAL_MARKS} (${percent}%)</h2>
+      <span class="pill ${passed?'':'gold'}" style="background:${passed?'var(--good)':'var(--danger)'};">${passed?'PASS':'NOT YET PASSED'}</span>
+      <table class="cal-table" style="margin-top:18px;">
+        <tr><th>Module</th><th>Score</th><th>Max</th></tr>
+        ${MODULES.map(m=>{
+          const s = state.examScores[m.id] || {score:0,max:m.marks};
+          return `<tr><td>${m.name}</td><td>${Math.round(s.score*10)/10}</td><td>${s.max}</td></tr>`;
+        }).join('')}
+      </table>
+      <div class="btn-row">
+        ${passed ? `<button class="btn gold" onclick="goCertificate()">View Certificate</button>` : ''}
+        <button class="btn secondary" onclick="goPracticeHub()">Practice Weak Areas</button>
+        <button class="btn secondary" onclick="goExamIntro()">Retake Exam</button>
+        <button class="btn secondary" onclick="goMenu()">Back to Menu</button>
+      </div>
+      ${!passed ? `<p class="small-note">You need ${PASS_PERCENT}% to pass. Head back to practice mode on your weaker modules, then retake the exam whenever you're ready.</p>` : ''}
+    </div>
+  `;
+}
+
+function goCertificate(){ state.mode = 'certificate'; render(); }
+
+/* ============================================================
+   CERTIFICATE
+   ============================================================ */
+function renderCertificate(){
+  setMode('certificate');
+  let totalScore = 0;
+  MODULES.forEach(m=>{ const s = state.examScores[m.id]; if(s) totalScore += s.score; });
+  const percent = Math.round((totalScore/TOTAL_MARKS)*1000)/10;
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+
+  app.innerHTML = `
+    <div class="top-nav"><a onclick="goResultsFromCert()">&larr; Back to results</a></div>
+    <div id="cert-canvas-wrap">
+      <div class="cert">
+        <h1>Certificate of Completion</h1>
+        <div class="sub">SMK Consulting and Training Agency &middot; Virtual Assistant Programme</div>
+        <p>This certifies that</p>
+        <div class="student-name">${escapeHtml(state.studentName)}</div>
+        <p>has successfully completed the Virtual Assistant Training &amp; Certification Simulator, covering calendar management, email management, data entry, task management, professional signatures, and meeting documentation.</p>
+        <div class="details">Final Score: <strong>${Math.round(totalScore*10)/10} / ${TOTAL_MARKS} (${percent}%)</strong><br>Date: ${dateStr}</div>
+        <div class="sign">
+          <div class="sig-line">Benita Emmanuel<br><span style="font-size:11.5px;color:#777;">Facilitator, SMK Consulting and Training Agency</span></div>
+          <div class="sig-line">${dateStr}<br><span style="font-size:11.5px;color:#777;">Date Issued</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:20px;">
+      <button class="btn gold" onclick="window.print()">Print Certificate</button>
+      <button class="btn secondary" onclick="goMenu()">Back to Menu</button>
+    </div>
+  `;
+}
+
+function goResultsFromCert(){ state.mode = 'results'; render(); }
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+render();
+
+</script>
+</body>
+</html>
