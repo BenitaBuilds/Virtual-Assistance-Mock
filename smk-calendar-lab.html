@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>SMK Calendar Management Practice Lab</title>
+<style>
+:root{
+  --bg:#f3f6fb;
+  --surface:#ffffff;
+  --surface-2:#eef2f9;
+  --ink:#1f2430;
+  --muted:#5f6478;
+  --line:#e1e6f0;
+  --primary:#1a73e8;
+  --primary-ink:#0b47a1;
+  --smk:#0b8f8f;
+  --smk-dark:#076868;
+  --gold:#f9ab00;
+  --danger:#d93025;
+  --danger-bg:#fdeceb;
+  --success:#1e8e3e;
+  --success-bg:#e8f6ec;
+  --warn-bg:#fff8e5;
+  --client:#1a73e8;
+  --internal:#34a853;
+  --personal:#8430ce;
+  --deadline:#d93025;
+  --radius:10px;
+  --font-display: "Segoe UI Semibold","Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-body: "Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono: "Consolas","SFMono-Regular",Menlo,monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+a{color:inherit;}
+
+/* ---------- App shell ---------- */
+#app{display:flex;flex-direction:column;min-height:100vh;}
+
+.topbar{
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  padding:10px 16px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+  position:sticky;top:0;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:10px;margin-right:4px;}
+.brand-mark{
+  width:38px;height:38px;border-radius:9px;
+  background:linear-gradient(135deg,var(--smk),var(--smk-dark));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.5px;
+  flex-shrink:0;
+}
+.brand-text{line-height:1.15;}
+.brand-text .t1{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink);}
+.brand-text .t2{font-size:11px;color:var(--muted);}
+
+.tabs{display:flex;gap:2px;background:var(--surface-2);padding:3px;border-radius:10px;}
+.tab-btn{
+  border:none;background:transparent;padding:8px 14px;border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--muted);
+}
+.tab-btn.active{background:var(--surface);color:var(--primary-ink);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+
+.spacer{flex:1;}
+
+.mode-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+.switch{position:relative;width:42px;height:24px;background:var(--surface-2);border-radius:20px;border:1px solid var(--line);flex-shrink:0;}
+.switch .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--primary);transition:left .15s ease;}
+.switch.on .knob{left:22px;background:var(--smk);}
+
+.btn{
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn:hover{background:var(--surface-2);}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-ink);}
+.btn-danger{background:var(--danger-bg);border-color:#f6c9c4;color:var(--danger);}
+.btn-danger:hover{background:#fbdad6;}
+.btn-ghost{border-color:transparent;background:transparent;}
+.btn-ghost:hover{background:var(--surface-2);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+
+/* ---------- Layout ---------- */
+.layout{display:flex;flex:1;min-height:0;}
+.sidebar{
+  width:270px;flex-shrink:0;background:var(--surface);
+  border-right:1px solid var(--line);
+  padding:14px 12px 40px;
+  overflow-y:auto;
+}
+.main{flex:1;min-width:0;padding:16px;overflow-x:hidden;}
+
+.side-section{margin-bottom:16px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface);}
+.side-head{
+  padding:9px 12px;background:var(--surface-2);
+  font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;justify-content:between;gap:6px;
+}
+.side-body{padding:10px 12px;font-size:12.5px;color:var(--ink);}
+.side-body p{margin:0 0 6px;}
+.profile-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#8430ce);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--font-display);flex-shrink:0;}
+.profile-name{font-weight:700;font-size:13.5px;}
+.profile-role{font-size:11.5px;color:var(--muted);}
+ul.tight{margin:0;padding-left:16px;}
+ul.tight li{margin-bottom:5px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.chip{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--surface-2);color:var(--muted);}
+.tz-tool select,.tz-tool input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;margin-bottom:6px;}
+.tz-result{background:var(--surface-2);border-radius:6px;padding:8px;font-family:var(--font-mono);font-size:12.5px;text-align:center;font-weight:700;color:var(--smk-dark);}
+
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* ---------- Calendar toolbar ---------- */
+.cal-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.cal-toolbar .nav-btns{display:flex;gap:4px;}
+.cal-title{font-family:var(--font-display);font-weight:700;font-size:18px;margin-right:6px;}
+.view-toggle{display:flex;gap:2px;background:var(--surface-2);padding:3px;border-radius:9px;margin-left:auto;}
+.view-btn{border:none;background:transparent;padding:7px 12px;border-radius:7px;font-size:12.5px;font-weight:700;color:var(--muted);}
+.view-btn.active{background:var(--surface);color:var(--primary-ink);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+
+/* ---------- Week / Day grid ---------- */
+.grid-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+.grid-head{display:grid;border-bottom:1px solid var(--line);}
+.grid-head-cell{padding:8px 4px;text-align:center;border-left:1px solid var(--line);font-size:11.5px;color:var(--muted);font-weight:700;}
+.grid-head-cell:first-child{border-left:none;}
+.grid-head-cell .dow{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;}
+.grid-head-cell .dnum{font-family:var(--font-display);font-size:16px;color:var(--ink);}
+.grid-head-cell.today .dnum{background:var(--primary);color:#fff;border-radius:50%;width:26px;height:26px;line-height:26px;display:inline-block;}
+
+.grid-body{display:grid;position:relative;}
+.time-col{border-left:none;}
+.time-slot{height:52px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);text-align:right;padding-right:6px;position:relative;top:-6px;}
+.day-col{border-left:1px solid var(--line);position:relative;}
+.hour-line{height:52px;border-top:1px solid var(--line);position:relative;}
+.hour-line:hover{background:#f8faff;cursor:pointer;}
+.hour-line.lunch{background:repeating-linear-gradient(45deg,var(--warn-bg),var(--warn-bg) 8px,#fffdf5 8px,#fffdf5 16px);}
+
+.evt{
+  position:absolute;left:3px;right:3px;border-radius:6px;
+  padding:4px 6px;font-size:11px;overflow:hidden;color:#fff;cursor:pointer;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);border-left:4px solid rgba(0,0,0,.25);
+  line-height:1.3;
+}
+.evt b{display:block;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.evt .t{opacity:.9;font-size:10px;font-family:var(--font-mono);}
+.evt.priority{outline:2px solid var(--gold);outline-offset:-2px;}
+.evt.conflict{outline:2px dashed var(--danger);outline-offset:-2px;}
+.evt-client{background:var(--client);}
+.evt-internal{background:var(--internal);}
+.evt-personal{background:var(--personal);}
+.evt-deadline{background:var(--deadline);}
+
+/* ---------- Month view ---------- */
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.month-cell{
+  min-height:96px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:6px;position:relative;background:var(--surface);cursor:pointer;
+}
+.month-cell:nth-child(7n){border-right:none;}
+.month-cell.otherm{background:#fbfcfe;color:#c3c9d6;}
+.month-cell:hover{background:#f8faff;}
+.month-daynum{font-size:12px;font-weight:700;margin-bottom:4px;}
+.month-daynum.today{background:var(--primary);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;}
+.month-evt{
+  font-size:10px;padding:2px 5px;border-radius:4px;color:#fff;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.month-more{font-size:10px;color:var(--muted);font-weight:700;margin-top:2px;}
+
+/* ---------- Modal ---------- */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(20,25,40,.5);display:none;
+  align-items:center;justify-content:center;z-index:200;padding:16px;
+}
+.modal-backdrop.show{display:flex;}
+.modal{
+  background:var(--surface);border-radius:14px;width:100%;max-width:560px;
+  max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+.modal-head h3{margin:0;font-family:var(--font-display);font-size:16px;flex:1;}
+.modal-close{border:none;background:transparent;font-size:20px;color:var(--muted);padding:2px 8px;border-radius:6px;}
+.modal-close:hover{background:var(--surface-2);}
+.modal-body{padding:16px 20px;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;}
+
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;
+}
+.field textarea{resize:vertical;min-height:60px;}
+.field-row{display:flex;gap:10px;}
+.field-row .field{flex:1;}
+.check-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-bottom:10px;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;color:#fff;}
+.badge-client{background:var(--client);}
+.badge-internal{background:var(--internal);}
+.badge-personal{background:var(--personal);}
+.badge-deadline{background:var(--deadline);}
+.badge-priority{background:var(--gold);color:#5c4200;}
+
+.detail-row{display:flex;gap:10px;margin-bottom:10px;font-size:13px;}
+.detail-row .ico{width:20px;flex-shrink:0;color:var(--muted);text-align:center;}
+.detail-row .val{flex:1;}
+.detail-row .lbl{font-size:10.5px;text-transform:uppercase;color:var(--muted);font-weight:700;display:block;margin-bottom:1px;}
+
+.alert{border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;}
+.alert-warn{background:var(--warn-bg);color:#8a5b00;border:1px solid #f6df9c;}
+.alert-danger{background:var(--danger-bg);color:#8a1c14;border:1px solid #f6c9c4;}
+.alert-ok{background:var(--success-bg);color:#0f5c28;border:1px solid #b9e6c4;}
+.alert ul{margin:4px 0 0;padding-left:16px;}
+
+/* ---------- Panels: Modules / Inbox / Progress ---------- */
+.panel-title{font-family:var(--font-display);font-size:20px;margin:0 0 4px;}
+.panel-sub{color:var(--muted);font-size:13px;margin:0 0 16px;}
+
+.module-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.module-head{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.module-num{
+  width:32px;height:32px;border-radius:8px;background:var(--surface-2);color:var(--smk-dark);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:13px;flex-shrink:0;
+}
+.module-head-text{flex:1;}
+.module-head-text .mt{font-weight:700;font-size:14px;}
+.module-head-text .ms{font-size:11.5px;color:var(--muted);}
+.module-score{font-size:12px;font-weight:700;color:var(--smk-dark);white-space:nowrap;}
+.module-chevron{color:var(--muted);transition:transform .15s;}
+.module-card.open .module-chevron{transform:rotate(90deg);}
+.module-body{border-top:1px solid var(--line);padding:14px 16px;display:none;background:#fbfcfe;}
+.module-card.open .module-body{display:block;}
+
+.task-block{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;}
+.task-block.passed{border-color:#b9e6c4;background:var(--success-bg);}
+.task-title{font-weight:700;font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.task-desc{font-size:12.5px;color:var(--ink);margin-bottom:8px;line-height:1.5;}
+.hint{font-size:12px;color:var(--smk-dark);background:#eafafa;border:1px dashed #b7e6e6;padding:7px 9px;border-radius:6px;margin-bottom:8px;}
+.quiz-opt{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;cursor:pointer;}
+.quiz-opt:hover{background:var(--surface-2);}
+.quiz-opt input{margin-top:2px;}
+.task-feedback{font-size:12px;margin-top:6px;padding:8px 10px;border-radius:6px;}
+.task-feedback.ok{background:var(--success-bg);color:#0f5c28;}
+.task-feedback.no{background:var(--danger-bg);color:#8a1c14;}
+
+.inbox-list{display:flex;flex-direction:column;gap:8px;}
+.inbox-item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;display:flex;gap:12px;align-items:flex-start;}
+.inbox-item:hover{background:#f8faff;}
+.inbox-item.read{opacity:.6;}
+.inbox-avatar{width:34px;height:34px;border-radius:50%;background:var(--smk);color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;font-family:var(--font-display);}
+.inbox-from{font-weight:700;font-size:13px;}
+.inbox-subject{font-size:12.5px;color:var(--muted);margin-top:1px;}
+.inbox-detail{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px;}
+
+.gauge-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;}
+.gauge-num{font-family:var(--font-display);font-size:15px;font-weight:700;fill:var(--ink);}
+.progress-modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.pm-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;}
+.pm-card .pm-title{font-weight:700;font-size:12.5px;margin-bottom:6px;}
+.pm-bar{height:6px;border-radius:4px;background:var(--surface-2);overflow:hidden;}
+.pm-bar-fill{height:100%;background:var(--smk);}
+.pm-pct{font-size:11px;color:var(--muted);margin-top:4px;}
+
+.log-feed{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;max-height:220px;overflow-y:auto;font-size:12px;}
+.log-feed .lg-line{padding:5px 0;border-bottom:1px dashed var(--line);}
+.log-feed .lg-line:last-child{border-bottom:none;}
+.lg-time{color:var(--muted);font-family:var(--font-mono);margin-right:6px;}
+
+.empty-note{text-align:center;color:var(--muted);font-size:13px;padding:30px 10px;}
+
+@media (max-width:900px){
+  .layout{flex-direction:column;}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--line);}
+  .topbar{gap:8px;}
+  .tabs{order:3;width:100%;}
+}
+@media (max-width:560px){
+  .grid-head-cell .dow{display:none;}
+  .cal-title{font-size:15px;}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">SMK</div>
+      <div class="brand-text">
+        <div class="t1">SMK Calendar Management Practice Lab</div>
+        <div class="t2">Virtual Assistant Training Workspace</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="mainTabs">
+      <button class="tab-btn active" data-tab="calendar">Calendar</button>
+      <button class="tab-btn" data-tab="modules">Training Modules</button>
+      <button class="tab-btn" data-tab="inbox">Client Inbox</button>
+      <button class="tab-btn" data-tab="progress">My Progress</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="mode-toggle">
+      <span id="modeLabel">Beginner Mode</span>
+      <div class="switch" id="modeSwitch"><div class="knob"></div></div>
+    </div>
+    <button class="btn btn-primary btn-sm" id="newEventBtn">+ New Event</button>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main" id="main"></div>
+  </div>
+
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   DATA
+   ========================================================= */
+var CLIENT = {
+  name:"Sarah Williams",
+  role:"CEO, Bright Horizon Digital Marketing Agency",
+  location:"New York, USA",
+  tz:"EST (UTC-5)",
+  vaLocation:"Nigeria",
+  vaTz:"WAT (UTC+1)"
+};
+
+var PREFS = [
+  "No meetings before 9:00 AM EST",
+  "Lunch break protected: 12:30 PM \u2013 1:30 PM EST",
+  "Maximum of 5 meetings per day",
+  "Always include a 15-minute buffer between meetings",
+  "Avoid scheduling meetings on Fridays after 2:00 PM EST",
+  "Mark priority meetings clearly",
+  "Internal meetings default to 30 minutes",
+  "Client meetings default to 60 minutes",
+  "Every important meeting needs an agenda"
+];
+
+var CATS = {
+  client:{label:"Client Meeting", cls:"client"},
+  internal:{label:"Internal Meeting", cls:"internal"},
+  personal:{label:"Personal Event", cls:"personal"},
+  deadline:{label:"Deadline", cls:"deadline"}
+};
+
+// Fixed simulation week: Mon Jan 12, 2026 - Sun Jan 18, 2026
+var WEEK_START = new Date(2026,0,12);
+function d(day,h,m){ // day offset 0-6 from WEEK_START, hour, minute -> "YYYY-MM-DD"
+  var dt = new Date(WEEK_START); dt.setDate(dt.getDate()+day);
+  return isoDate(dt);
+}
+function isoDate(dt){
+  var y=dt.getFullYear(), mo=String(dt.getMonth()+1).padStart(2,'0'), da=String(dt.getDate()).padStart(2,'0');
+  return y+"-"+mo+"-"+da;
+}
+
+var uidc = 1;
+function mkEvent(o){
+  o.id = "e"+(uidc++);
+  o.isSeed = true;
+  o.attendees = o.attendees || [];
+  o.description = o.description || "";
+  o.location = o.location || "";
+  o.meetingLink = o.meetingLink || "";
+  o.reminder = o.reminder || "";
+  o.recurring = o.recurring || "none";
+  o.priority = !!o.priority;
+  return o;
+}
+
+var EVENTS = [
+  // MONDAY Jan 12 - reference / demo day
+  mkEvent({title:"Marketing Team Standup",category:"internal",date:d(0),start:"09:00",end:"09:30",attendees:["Internal Marketing Team"],description:"Quick weekly sync on campaign status.",reminder:"10"}),
+  mkEvent({title:"Discovery Call \u2013 Nova Retail Group",category:"client",date:d(0),start:"10:00",end:"11:00",attendees:["Nova Retail Group"],description:"Intro call to understand Nova Retail's marketing goals.",meetingLink:"https://meet.smk-lab.sim/nova-retail",reminder:"15",priority:true}),
+  mkEvent({title:"Content Calendar Review",category:"internal",date:d(0),start:"11:15",end:"11:45",attendees:["Content Team"],description:"Review next month's content calendar."}),
+  mkEvent({title:"Strategy Session \u2013 Bright Path Co",category:"client",date:d(0),start:"13:30",end:"14:30",attendees:["Bright Path Co"],description:"Quarterly strategy alignment session.",meetingLink:"https://zoom.smk-lab.sim/brightpath",reminder:"15",priority:true}),
+  mkEvent({title:"Q1 Campaign Brief Due",category:"deadline",date:d(0),start:"16:00",end:"16:15",description:"Final Q1 campaign brief must be submitted."}),
+
+  // TUESDAY Jan 13 - scheduling / rescheduling practice day (Module 2)
+  mkEvent({title:"Client Call \u2013 Whitfield & Sons",category:"client",date:d(1),start:"09:00",end:"10:00",attendees:["Whitfield & Sons"],description:"Monthly performance review call.",meetingLink:"https://meet.smk-lab.sim/whitfield"}),
+  mkEvent({title:"Design Review",category:"internal",date:d(1),start:"10:15",end:"11:00",attendees:["Design Team"],description:"Review new landing page designs."}),
+  mkEvent({title:"Vendor Check-in",category:"internal",date:d(1),start:"11:30",end:"12:00",attendees:["Ad Vendor Rep"],description:"Check on ad spend delivery."}),
+  mkEvent({title:"Sarah's Personal Trainer",category:"personal",date:d(1),start:"14:00",end:"15:00",description:"Personal fitness session."}),
+  mkEvent({title:"Budget Review",category:"internal",date:d(1),start:"14:15",end:"14:45",attendees:["Finance"],description:"Review Q1 marketing budget."}),
+
+  // WEDNESDAY Jan 14 - messy / audit day (Module 5)
+  mkEvent({title:"Early Sync w/ Design Team",category:"internal",date:d(2),start:"08:00",end:"08:30",attendees:["Design Team"]}),
+  mkEvent({title:"Call with Legacy Partner",category:"client",date:d(2),start:"08:30",end:"09:15",attendees:["Legacy Partner Co"]}),
+  mkEvent({title:"Product Roadmap Review",category:"client",date:d(2),start:"09:15",end:"10:15",attendees:["Roadmap Stakeholders"]}),
+  mkEvent({title:"Team Huddle",category:"internal",date:d(2),start:"10:15",end:"10:45",attendees:["Full Team"]}),
+  mkEvent({title:"Lunch Meeting with Investor",category:"client",date:d(2),start:"12:00",end:"13:00",attendees:["Investor - Dana Reyes"],description:"Investor check-in over lunch."}),
+  mkEvent({title:"Client Onboarding Call",category:"client",date:d(2),start:"13:15",end:"14:15",attendees:["New Client - Cedar Grove Inc"],meetingLink:"https://zoom.smk-lab.sim/cedargrove"}),
+  mkEvent({title:"Quick Sync",category:"internal",date:d(2),start:"14:20",end:"14:50",attendees:["Ops"]}),
+  mkEvent({title:"Retention Call",category:"client",date:d(2),start:"15:00",end:"16:00",attendees:["Client - Palm & Co"],meetingLink:"https://meet.smk-lab.sim/palmco"}),
+  mkEvent({title:"Wrap-up Meeting",category:"internal",date:d(2),start:"16:00",end:"17:00",attendees:["Leadership Team"]}),
+
+  // THURSDAY Jan 15 - John / ABC Company scenario day (Module 4)
+  mkEvent({title:"Weekly Leadership Sync",category:"internal",date:d(3),start:"09:00",end:"09:30",attendees:["Leadership Team"],description:"Weekly leadership alignment."}),
+  mkEvent({title:"Check-in \u2013 Meridian Foods",category:"client",date:d(3),start:"10:00",end:"11:00",attendees:["Meridian Foods"],description:"Monthly account check-in.",meetingLink:"https://meet.smk-lab.sim/meridian",priority:true}),
+  mkEvent({title:"Marketing Metrics Review",category:"internal",date:d(3),start:"15:30",end:"16:00",attendees:["Analytics Team"],description:"Review weekly KPIs."}),
+
+  // FRIDAY Jan 16 - Friday-after-2pm rule test + focus time
+  mkEvent({title:"Friday Planning Huddle",category:"internal",date:d(4),start:"09:00",end:"09:30",attendees:["Core Team"]}),
+  mkEvent({title:"Ops Review",category:"internal",date:d(4),start:"09:45",end:"10:15",attendees:["Ops Team"]}),
+  mkEvent({title:"Focus Time: Content Writing",category:"personal",date:d(4),start:"10:30",end:"12:00",description:"Protected focus block \u2013 do not schedule over."}),
+  mkEvent({title:"Weekly Wrap-up",category:"internal",date:d(4),start:"13:30",end:"14:00",attendees:["Core Team"]}),
+  mkEvent({title:"Call with Horizon Media",category:"client",date:d(4),start:"15:00",end:"16:00",attendees:["Horizon Media"],description:"Partnership discussion.",meetingLink:"https://zoom.smk-lab.sim/horizonmedia"}),
+
+  // SATURDAY Jan 17 - light personal day
+  mkEvent({title:"Family Brunch",category:"personal",date:d(5),start:"11:00",end:"12:30",description:"Personal time \u2013 not for scheduling."})
+];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+var state = {
+  tab:"calendar",
+  view:"week",
+  cursor:new Date(WEEK_START), // anchor date used for all views
+  mode:"beginner", // beginner | advanced
+  openModuleId:1,
+  quizAnswers:{}, // taskId -> selection
+  taskResults:{}, // taskId -> {pass, detail}
+  inboxReadIds:{},
+  activeInboxId:null,
+  log:[]
+};
+
+function addLog(msg){
+  var now = new Date();
+  var t = String(now.getHours()).padStart(2,'0')+":"+String(now.getMinutes()).padStart(2,'0')+":"+String(now.getSeconds()).padStart(2,'0');
+  state.log.unshift({t:t,msg:msg});
+  if(state.log.length>60) state.log.pop();
+}
+
+/* =========================================================
+   UTILS
+   ========================================================= */
+var DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+var DOW_FULL = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function toMin(hhmm){ var p=hhmm.split(":"); return (+p[0])*60+(+p[1]); }
+function fromMin(m){ var h=Math.floor(m/60), mi=m%60; return String(h).padStart(2,'0')+":"+String(mi).padStart(2,'0'); }
+function fmt12(hhmm){
+  var m = toMin(hhmm); var h = Math.floor(m/60), mi=m%60;
+  var ap = h>=12?"PM":"AM"; var hh = h%12; if(hh===0) hh=12;
+  return hh+":"+String(mi).padStart(2,'0')+" "+ap;
+}
+function parseISO(iso){ var p=iso.split("-"); return new Date(+p[0],+p[1]-1,+p[2]); }
+function dowIndex(iso){ // 0=Mon..6=Sun
+  var jsday = parseISO(iso).getDay(); // 0=Sun..6=Sat
+  return jsday===0?6:jsday-1;
+}
+function addDays(iso,n){ var dt=parseISO(iso); dt.setDate(dt.getDate()+n); return isoDate(dt); }
+function fmtDateLong(iso){ var dt=parseISO(iso); return DOW_FULL[dowIndex(iso)]+", "+MONTHS[dt.getMonth()]+" "+dt.getDate()+", "+dt.getFullYear(); }
+function fmtDateShort(iso){ var dt=parseISO(iso); return MONTHS[dt.getMonth()].slice(0,3)+" "+dt.getDate(); }
+
+function esToWat(hhmm){ var m=(toMin(hhmm)+6*60)%1440; return fromMin(m); }
+function esToGmt(hhmm){ var m=(toMin(hhmm)+5*60)%1440; return fromMin(m); }
+function esToPst(hhmm){ var m=(toMin(hhmm)-3*60+1440)%1440; return fromMin(m); }
+
+function sortedDayEvents(iso){
+  return EVENTS.filter(function(e){return e.date===iso;}).sort(function(a,b){return toMin(a.start)-toMin(b.start);});
+}
+function overlaps(aS,aE,bS,bE){ return toMin(aS)<toMin(bE) && toMin(bS)<toMin(aE); }
+
+/* Conflict + preference checker used by both the app UI and audit module */
+function analyzeDay(iso){
+  var evts = sortedDayEvents(iso);
+  var issues = [];
+  var meetingCount = evts.filter(function(e){return e.category==="client"||e.category==="internal";}).length;
+  if(meetingCount>5){
+    issues.push({type:"overload",msg:"Overloaded day: "+meetingCount+" meetings scheduled (max is 5)."});
+  }
+  for(var i=0;i<evts.length;i++){
+    var e = evts[i];
+    if((e.category==="client"||e.category==="internal") && toMin(e.start)<toMin("09:00")){
+      issues.push({type:"early",id:e.id,msg:'"'+e.title+'" starts before 9:00 AM EST.'});
+    }
+    if(overlaps(e.start,e.end,"12:30","13:30") && (e.category==="client"||e.category==="internal")){
+      issues.push({type:"lunch",id:e.id,msg:'"'+e.title+'" overlaps the protected lunch break (12:30\u20131:30 PM EST).'});
+    }
+    if(dowIndex(iso)===4 && toMin(e.start)>=toMin("14:00") && (e.category==="client"||e.category==="internal")){
+      issues.push({type:"friday",id:e.id,msg:'"'+e.title+'" is scheduled on Friday after 2:00 PM EST.'});
+    }
+    if((e.category==="client"||e.category==="internal") && !e.description){
+      issues.push({type:"nodetail",id:e.id,msg:'"'+e.title+'" is missing an agenda/description.'});
+    }
+    for(var j=0;j<evts.length;j++){
+      if(i===j) continue;
+      var f = evts[j];
+      if(overlaps(e.start,e.end,f.start,f.end)){
+        issues.push({type:"overlap",id:e.id,id2:f.id,msg:'"'+e.title+'" double-books with "'+f.title+'".'});
+      } else if(toMin(f.start)>=toMin(e.end) && toMin(f.start)-toMin(e.end)<15 && (e.category==="client"||e.category==="internal") && (f.category==="client"||f.category==="internal")){
+        issues.push({type:"buffer",id:e.id,id2:f.id,msg:'Only '+(toMin(f.start)-toMin(e.end))+' min between "'+e.title+'" and "'+f.title+'" (needs 15 min buffer).'});
+      }
+    }
+  }
+  // de-dup overlap/buffer pairs (a-b and b-a)
+  var seen = {}; var out=[];
+  issues.forEach(function(iss){
+    var key = iss.type+"|"+(iss.id||"")+"|"+(iss.id2?[iss.id,iss.id2].sort().join(","):"");
+    if(!seen[key]){ seen[key]=true; out.push(iss); }
+  });
+  return out;
+}
+
+/* =========================================================
+   RENDER: SIDEBAR
+   ========================================================= */
+function renderSidebar(){
+  var el = document.getElementById("sidebar");
+  var initials = CLIENT.name.split(" ").map(function(w){return w[0];}).join("");
+  el.innerHTML =
+    '<div class="side-section">'+
+      '<div class="side-head">Client Profile</div>'+
+      '<div class="side-body">'+
+        '<div class="profile-row">'+
+          '<div class="avatar">'+initials+'</div>'+
+          '<div><div class="profile-name">'+CLIENT.name+'</div><div class="profile-role">'+CLIENT.role+'</div></div>'+
+        '</div>'+
+        '<p><strong>Location:</strong> '+CLIENT.location+'</p>'+
+        '<p><strong>Client time zone:</strong> '+CLIENT.tz+'</p>'+
+        '<p><strong>Your (VA) location:</strong> '+CLIENT.vaLocation+' \u2014 '+CLIENT.vaTz+'</p>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="side-section">'+
+      '<div class="side-head">Working Hours & Rules</div>'+
+      '<div class="side-body"><ul class="tight">'+
+        PREFS.map(function(p){return "<li>"+p+"</li>";}).join("")+
+      '</ul></div>'+
+    '</div>'+
+
+    '<div class="side-section">'+
+      '<div class="side-head">Time Zone Converter</div>'+
+      '<div class="side-body tz-tool">'+
+        '<label style="font-size:11px;color:var(--muted);">Time in Client\u2019s EST</label>'+
+        '<input type="time" id="tzInput" value="15:00">'+
+        '<div class="tz-result" id="tzResult"></div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="side-section">'+
+      '<div class="side-head">Calendar Legend</div>'+
+      '<div class="side-body">'+
+        Object.keys(CATS).map(function(k){
+          return '<div class="legend-item"><span class="legend-dot" style="background:var(--'+CATS[k].cls+')"></span>'+CATS[k].label+'</div>';
+        }).join("")+
+        '<div class="legend-item"><span class="legend-dot" style="background:var(--gold)"></span>Priority meeting (gold outline)</div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="side-section">'+
+      '<div class="side-head">Notes</div>'+
+      '<div class="side-body">'+
+        '<p style="color:var(--muted);">Simulation week: Jan 12\u201318, 2026. Use this as your practice calendar for all modules \u2014 dates are fixed so tasks line up correctly.</p>'+
+      '</div>'+
+    '</div>';
+
+  document.getElementById("tzInput").addEventListener("input", updateTzResult);
+  updateTzResult();
+}
+function updateTzResult(){
+  var v = document.getElementById("tzInput").value || "15:00";
+  document.getElementById("tzResult").innerHTML =
+    "WAT "+fmt12(esToWat(v))+" &nbsp;|&nbsp; GMT "+fmt12(esToGmt(v))+" &nbsp;|&nbsp; PST "+fmt12(esToPst(v));
+}
+
+/* =========================================================
+   RENDER: MAIN ROUTER
+   ========================================================= */
+function renderMain(){
+  var el = document.getElementById("main");
+  if(state.tab==="calendar") el.innerHTML = calendarHTML();
+  else if(state.tab==="modules") el.innerHTML = modulesHTML();
+  else if(state.tab==="inbox") el.innerHTML = inboxHTML();
+  else if(state.tab==="progress") el.innerHTML = progressHTML();
+  wireMainEvents();
+}
+
+/* =========================================================
+   CALENDAR VIEWS
+   ========================================================= */
+function calendarHTML(){
+  var title;
+  if(state.view==="month"){
+    title = MONTHS[state.cursor.getMonth()]+" "+state.cursor.getFullYear();
+  } else if(state.view==="week"){
+    var mon = weekStartOf(state.cursor);
+    var sun = addDays(mon,6);
+    title = fmtDateShort(mon)+" \u2013 "+fmtDateShort(sun)+", "+state.cursor.getFullYear();
+  } else {
+    title = fmtDateLong(isoDate(state.cursor));
+  }
+
+  var html = '<div class="cal-toolbar">'+
+    '<div class="nav-btns">'+
+      '<button class="btn btn-sm" id="prevBtn">\u2039</button>'+
+      '<button class="btn btn-sm" id="todayBtn">Today</button>'+
+      '<button class="btn btn-sm" id="nextBtn">\u203a</button>'+
+    '</div>'+
+    '<div class="cal-title">'+title+'</div>'+
+    '<div class="view-toggle">'+
+      ["day","week","month"].map(function(v){
+        return '<button class="view-btn '+(state.view===v?"active":"")+'" data-view="'+v+'">'+v.charAt(0).toUpperCase()+v.slice(1)+'</button>';
+      }).join("")+
+    '</div>'+
+  '</div>';
+
+  if(state.view==="month") html += monthGridHTML();
+  else if(state.view==="week") html += weekGridHTML();
+  else html += dayGridHTML(isoDate(state.cursor));
+
+  return html;
+}
+
+function weekStartOf(dateObj){
+  var wd = dateObj.getDay(); var diff = wd===0?-6:1-wd;
+  var mon = new Date(dateObj); mon.setDate(mon.getDate()+diff);
+  return isoDate(mon);
+}
+
+var HOURS = []; for(var hh=6; hh<=21; hh++) HOURS.push(hh);
+var GRID_START_MIN = 6*60, GRID_END_MIN = 22*60;
+var ROW_H = 52; // px per hour
+
+function eventTopHeight(e){
+  var top = (toMin(e.start)-GRID_START_MIN)/60*ROW_H;
+  var h = (toMin(e.end)-toMin(e.start))/60*ROW_H;
+  return {top:Math.max(top,0), height:Math.max(h,20)};
+}
+
+function weekGridHTML(){
+  var mon = weekStartOf(state.cursor);
+  var days = []; for(var i=0;i<7;i++) days.push(addDays(mon,i));
+  var todayIso = isoDate(new Date(2026,0,12)); // simulated "today" anchor for highlight
+
+  var head = '<div class="grid-head" style="grid-template-columns:52px repeat(7,1fr);">'+
+    '<div class="grid-head-cell"></div>'+
+    days.map(function(iso){
+      var dt = parseISO(iso);
+      return '<div class="grid-head-cell '+(iso===todayIso?"today":"")+'"><span class="dow">'+DOW[dowIndex(iso)]+'</span><span class="dnum">'+dt.getDate()+'</span></div>';
+    }).join("")+
+  '</div>';
+
+  var body = '<div class="grid-body" style="grid-template-columns:52px repeat(7,1fr);">'+
+    '<div class="time-col">'+HOURS.map(function(h){return '<div class="time-slot">'+fmtHourLabel(h)+'</div>';}).join("")+'</div>'+
+    days.map(function(iso){
+      return dayColumnHTML(iso);
+    }).join("")+
+  '</div>';
+
+  return '<div class="grid-wrap">'+head+body+'</div>';
+}
+
+function dayGridHTML(iso){
+  var head = '<div class="grid-head" style="grid-template-columns:52px 1fr;">'+
+    '<div class="grid-head-cell"></div>'+
+    '<div class="grid-head-cell today"><span class="dow">'+DOW[dowIndex(iso)]+'</span><span class="dnum">'+parseISO(iso).getDate()+'</span></div>'+
+  '</div>';
+  var body = '<div class="grid-body" style="grid-template-columns:52px 1fr;">'+
+    '<div class="time-col">'+HOURS.map(function(h){return '<div class="time-slot">'+fmtHourLabel(h)+'</div>';}).join("")+'</div>'+
+    dayColumnHTML(iso)+
+  '</div>';
+  return '<div class="grid-wrap">'+head+body+'</div>';
+}
+
+function fmtHourLabel(h){
+  var ap = h>=12?"PM":"AM"; var hh=h%12; if(hh===0) hh=12; return hh+" "+ap;
+}
+
+function dayColumnHTML(iso){
+  var rows = HOURS.map(function(h){
+    var isLunch = h===12;
+    return '<div class="hour-line '+(isLunch?"lunch":"")+'" data-date="'+iso+'" data-hour="'+h+'"></div>';
+  }).join("");
+  var evts = sortedDayEvents(iso);
+  var issues = analyzeDay(iso);
+  var conflictIds = {}; issues.forEach(function(is){ if(is.type==="overlap"||is.type==="buffer"){conflictIds[is.id]=true; if(is.id2) conflictIds[is.id2]=true;} });
+  var evtHtml = evts.map(function(e){
+    var pos = eventTopHeight(e);
+    var cls = "evt evt-"+e.category+(e.priority?" priority":"")+(conflictIds[e.id]?" conflict":"");
+    return '<div class="'+cls+'" style="top:'+pos.top+'px;height:'+pos.height+'px;" data-evtid="'+e.id+'">'+
+      '<b>'+(e.priority?'\u2605 ':'')+esc(e.title)+'</b><span class="t">'+fmt12(e.start)+' \u2013 '+fmt12(e.end)+'</span>'+
+    '</div>';
+  }).join("");
+  return '<div class="day-col" style="height:'+(HOURS.length*ROW_H)+'px;">'+rows+evtHtml+'</div>';
+}
+
+function monthGridHTML(){
+  var y = state.cursor.getFullYear(), m = state.cursor.getMonth();
+  var first = new Date(y,m,1);
+  var startIso = weekStartOf(first);
+  var cells = [];
+  for(var i=0;i<42;i++){
+    var iso = addDays(startIso,i);
+    var dt = parseISO(iso);
+    cells.push(iso);
+  }
+  var head = '<div class="grid-head" style="grid-template-columns:repeat(7,1fr);">'+
+    DOW.map(function(w){return '<div class="grid-head-cell"><span class="dow">'+w+'</span></div>';}).join("")+
+  '</div>';
+
+  var todayIso = isoDate(new Date(2026,0,12));
+
+  var body = '<div class="month-grid">'+ cells.map(function(iso){
+    var dt = parseISO(iso);
+    var other = dt.getMonth()!==m;
+    var evts = sortedDayEvents(iso);
+    var shown = evts.slice(0,3);
+    var extra = evts.length-shown.length;
+    return '<div class="month-cell '+(other?"otherm":"")+'" data-date="'+iso+'">'+
+      '<div class="month-daynum '+(iso===todayIso?"today":"")+'">'+dt.getDate()+'</div>'+
+      shown.map(function(e){return '<div class="month-evt evt-'+e.category+'" data-evtid="'+e.id+'">'+(e.priority?"\u2605 ":"")+esc(e.title)+'</div>';}).join("")+
+      (extra>0? '<div class="month-more">+'+extra+' more</div>':'')+
+    '</div>';
+  }).join("")+'</div>';
+
+  return '<div class="grid-wrap">'+head+body+'</div>';
+}
+
+function esc(s){ var d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+
+/* =========================================================
+   MODAL: create / view / edit event
+   ========================================================= */
+function openEventModal(opts){
+  opts = opts || {};
+  var evt = opts.event || null;
+  var mode = evt ? "view" : "create";
+  renderModal(mode, evt, opts.prefill||{});
+  document.getElementById("modalBackdrop").classList.add("show");
+}
+function closeModal(){ document.getElementById("modalBackdrop").classList.remove("show"); }
+
+function renderModal(mode, evt, prefill){
+  var box = document.getElementById("modalBox");
+  if(mode==="view"){
+    var issues = analyzeDay(evt.date).filter(function(is){return is.id===evt.id || is.id2===evt.id;});
+    box.innerHTML =
+      '<div class="modal-head"><span class="badge badge-'+evt.category+'">'+CATS[evt.category].label+'</span>'+(evt.priority?'<span class="badge badge-priority">\u2605 Priority</span>':'')+
+        '<h3 style="margin-left:2px;"></h3><button class="modal-close" id="mClose">&times;</button></div>'+
+      '<div class="modal-body">'+
+        '<h3 style="margin:0 0 10px;font-size:18px;">'+esc(evt.title)+'</h3>'+
+        (issues.length? '<div class="alert alert-danger"><div>&#9888;<ul>'+issues.map(function(i){return "<li>"+i.msg+"</li>";}).join("")+'</ul></div></div>':'')+
+        '<div class="detail-row"><div class="ico">&#128197;</div><div class="val"><span class="lbl">Date</span>'+fmtDateLong(evt.date)+'</div></div>'+
+        '<div class="detail-row"><div class="ico">&#128337;</div><div class="val"><span class="lbl">Time (EST)</span>'+fmt12(evt.start)+' \u2013 '+fmt12(evt.end)+'</div></div>'+
+        (evt.location? '<div class="detail-row"><div class="ico">&#128205;</div><div class="val"><span class="lbl">Location</span>'+esc(evt.location)+'</div></div>':'')+
+        (evt.attendees.length? '<div class="detail-row"><div class="ico">&#128100;</div><div class="val"><span class="lbl">Attendees</span>'+evt.attendees.map(esc).join(", ")+'</div></div>':'')+
+        (evt.meetingLink? '<div class="detail-row"><div class="ico">&#128279;</div><div class="val"><span class="lbl">Meeting Link</span>'+esc(evt.meetingLink)+'</div></div>':'')+
+        (evt.reminder? '<div class="detail-row"><div class="ico">&#128276;</div><div class="val"><span class="lbl">Reminder</span>'+esc(evt.reminder)+' minutes before</div></div>':'')+
+        (evt.recurring && evt.recurring!=="none"? '<div class="detail-row"><div class="ico">&#128257;</div><div class="val"><span class="lbl">Recurring</span>'+esc(evt.recurring)+'</div></div>':'')+
+        (evt.description? '<div class="detail-row"><div class="ico">&#128221;</div><div class="val"><span class="lbl">Description / Agenda</span>'+esc(evt.description)+'</div></div>':'')+
+      '</div>'+
+      '<div class="modal-foot">'+
+        '<button class="btn btn-danger" id="mDelete">Delete</button>'+
+        '<span class="spacer" style="flex:1"></span>'+
+        '<button class="btn" id="mCancel">Close</button>'+
+        '<button class="btn btn-primary" id="mEdit">Edit</button>'+
+      '</div>';
+    document.getElementById("mClose").onclick = closeModal;
+    document.getElementById("mCancel").onclick = closeModal;
+    document.getElementById("mEdit").onclick = function(){ renderModal("edit", evt, {}); };
+    document.getElementById("mDelete").onclick = function(){
+      if(confirm('Delete "'+evt.title+'"?')){
+        EVENTS = EVENTS.filter(function(x){return x.id!==evt.id;});
+        addLog("Deleted event: "+evt.title);
+        closeModal(); renderMain();
+      }
+    };
+    return;
+  }
+
+  // create / edit form
+  var isEdit = mode==="edit";
+  var f = isEdit ? evt : {
+    title:"", category:prefill.category||"internal", date:prefill.date||isoDate(state.cursor),
+    start:prefill.start||"09:00", end:prefill.end||"09:30", location:"", attendees:[],
+    description:"", meetingLink:"", reminder:"10", recurring:"none", priority:false
+  };
+  box.innerHTML =
+    '<div class="modal-head"><h3>'+(isEdit?"Edit Event":"New Event")+'</h3><button class="modal-close" id="mClose">&times;</button></div>'+
+    '<div class="modal-body">'+
+      '<div id="formAlert"></div>'+
+      '<div class="field"><label>Event Title</label><input id="fTitle" type="text" value="'+esc(f.title)+'" placeholder="e.g. Client Discovery Call"></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Category</label><select id="fCategory">'+
+          Object.keys(CATS).map(function(k){return '<option value="'+k+'" '+(f.category===k?"selected":"")+'>'+CATS[k].label+'</option>';}).join("")+
+        '</select></div>'+
+        '<div class="field"><label>Date</label><input id="fDate" type="date" value="'+f.date+'" min="2026-01-12" max="2026-01-18"></div>'+
+      '</div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Start (EST)</label><input id="fStart" type="time" value="'+f.start+'"></div>'+
+        '<div class="field"><label>End (EST)</label><input id="fEnd" type="time" value="'+f.end+'"></div>'+
+      '</div>'+
+      '<div class="check-row"><input type="checkbox" id="fPriority" '+(f.priority?"checked":"")+'> Mark as priority meeting</div>'+
+      '<div class="field"><label>Location</label><input id="fLocation" type="text" value="'+esc(f.location)+'" placeholder="Office / Video Call / Client site"></div>'+
+      '<div class="field"><label>Attendees (comma separated)</label><input id="fAttendees" type="text" value="'+esc(f.attendees.join(", "))+'" placeholder="e.g. John Carter, ABC Company"></div>'+
+      '<div class="field"><label>Description / Agenda</label><textarea id="fDescription" placeholder="Meeting agenda or notes...">'+esc(f.description)+'</textarea></div>'+
+      '<div class="field-row">'+
+        '<div class="field"><label>Meeting Link</label>'+
+          '<div style="display:flex;gap:6px;">'+
+          '<input id="fLink" type="text" value="'+esc(f.meetingLink)+'" placeholder="No link" style="flex:1;">'+
+          '<button class="btn btn-sm" id="genLink" type="button">Generate</button>'+
+          '</div>'+
+        '</div>'+
+        '<div class="field"><label>Reminder</label><select id="fReminder">'+
+          ["none","5","10","15","30","60"].map(function(v){
+            var lbl = v==="none"?"No reminder":v+" min before";
+            return '<option value="'+v+'" '+(f.reminder===v?"selected":"")+'>'+lbl+'</option>';
+          }).join("")+
+        '</select></div>'+
+      '</div>'+
+      '<div class="field"><label>Recurrence</label><select id="fRecurring">'+
+        ["none","weekly","monthly"].map(function(v){return '<option value="'+v+'" '+(f.recurring===v?"selected":"")+'>'+(v==="none"?"Does not repeat":v.charAt(0).toUpperCase()+v.slice(1))+'</option>';}).join("")+
+      '</select></div>'+
+    '</div>'+
+    '<div class="modal-foot">'+
+      '<button class="btn" id="mCancel">Cancel</button>'+
+      '<button class="btn btn-primary" id="mSave">'+(isEdit?"Save Changes":"Create Event")+'</button>'+
+    '</div>';
+
+  document.getElementById("mClose").onclick = closeModal;
+  document.getElementById("mCancel").onclick = closeModal;
+  document.getElementById("genLink").onclick = function(){
+    var slugSrc = (document.getElementById("fTitle").value || "meeting").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+    document.getElementById("fLink").value = "https://meet.smk-lab.sim/"+(slugSrc||"meeting");
+  };
+  document.getElementById("mSave").onclick = function(){ saveEventFromForm(isEdit?evt.id:null); };
+}
+
+function saveEventFromForm(existingId){
+  var title = document.getElementById("fTitle").value.trim();
+  var category = document.getElementById("fCategory").value;
+  var date = document.getElementById("fDate").value;
+  var start = document.getElementById("fStart").value;
+  var end = document.getElementById("fEnd").value;
+  var priority = document.getElementById("fPriority").checked;
+  var location = document.getElementById("fLocation").value.trim();
+  var attendees = document.getElementById("fAttendees").value.split(",").map(function(s){return s.trim();}).filter(Boolean);
+  var description = document.getElementById("fDescription").value.trim();
+  var meetingLink = document.getElementById("fLink").value.trim();
+  var reminder = document.getElementById("fReminder").value;
+  var recurring = document.getElementById("fRecurring").value;
+
+  var alertEl = document.getElementById("formAlert");
+  if(!title || !date || !start || !end || toMin(end)<=toMin(start)){
+    alertEl.innerHTML = '<div class="alert alert-danger">Please enter a title and a valid time range (end must be after start).</div>';
+    return;
+  }
+
+  var draft = {id:existingId||("e"+(uidc++)), isSeed:false, title:title, category:category, date:date, start:start, end:end,
+    priority:priority, location:location, attendees:attendees, description:description, meetingLink:meetingLink, reminder:reminder, recurring:recurring};
+
+  // Check conflicts against other events that day (excluding self)
+  var others = sortedDayEvents(date).filter(function(e){return e.id!==draft.id;});
+  var warnings = [];
+  others.forEach(function(o){
+    if(overlaps(draft.start,draft.end,o.start,o.end)) warnings.push('Overlaps with "'+o.title+'" ('+fmt12(o.start)+'\u2013'+fmt12(o.end)+').');
+  });
+  if((category==="client"||category==="internal")){
+    if(toMin(start)<toMin("09:00")) warnings.push("Starts before 9:00 AM EST \u2014 outside client's allowed hours.");
+    if(overlaps(start,end,"12:30","13:30")) warnings.push("Overlaps the client's protected lunch break.");
+    if(dowIndex(date)===4 && toMin(start)>=toMin("14:00")) warnings.push("This is a Friday meeting after 2:00 PM EST.");
+    if(!description) warnings.push("No agenda/description added \u2014 client prefers agendas for important meetings.");
+  }
+  var meetingCountAfter = others.filter(function(e){return e.category==="client"||e.category==="internal";}).length + ((category==="client"||category==="internal")?1:0);
+  if(meetingCountAfter>5) warnings.push("This day will have "+meetingCountAfter+" meetings, exceeding the 5-meeting daily limit.");
+
+  if(warnings.length){
+    alertEl.innerHTML = '<div class="alert alert-warn"><div>&#9888;<div><strong>Heads up \u2014 this may break a client preference:</strong><ul>'+
+      warnings.map(function(w){return "<li>"+w+"</li>";}).join("")+
+      '</ul>Click Create/Save again to confirm anyway, or adjust the details.</div></div></div>';
+    if(!draft._confirmOnce){
+      draft._confirmOnce = true;
+      // store pending state on the button so a second click confirms
+      var btn = document.getElementById("mSave");
+      btn.textContent = "Confirm Anyway";
+      btn.onclick = function(){ commitEvent(existingId, draft); };
+      return;
+    }
+  }
+  commitEvent(existingId, draft);
+}
+
+function commitEvent(existingId, draft){
+  delete draft._confirmOnce;
+  if(existingId){
+    var idx = EVENTS.findIndex(function(e){return e.id===existingId;});
+    var wasSeed = EVENTS[idx].isSeed;
+    draft.isSeed = wasSeed; // preserve seed flag on edit
+    EVENTS[idx] = draft;
+    addLog("Edited event: "+draft.title);
+  } else {
+    EVENTS.push(draft);
+    addLog("Created event: "+draft.title+" on "+fmtDateShort(draft.date));
+  }
+  closeModal();
+  renderMain();
+  refreshTaskAutoChecks();
+}
+
+/* =========================================================
+   WIRE CALENDAR INTERACTIONS
+   ========================================================= */
+function wireMainEvents(){
+  if(state.tab==="calendar"){
+    var prev = document.getElementById("prevBtn");
+    var next = document.getElementById("nextBtn");
+    var today = document.getElementById("todayBtn");
+    if(prev) prev.onclick = function(){ shiftCursor(-1); };
+    if(next) next.onclick = function(){ shiftCursor(1); };
+    if(today) today.onclick = function(){ state.cursor = new Date(2026,0,12); renderMain(); };
+    document.querySelectorAll(".view-btn").forEach(function(b){
+      b.onclick = function(){ state.view = b.getAttribute("data-view"); renderMain(); };
+    });
+    document.querySelectorAll(".evt, .month-evt").forEach(function(elx){
+      elx.addEventListener("click", function(ev){
+        ev.stopPropagation();
+        var id = elx.getAttribute("data-evtid");
+        var evt = EVENTS.find(function(e){return e.id===id;});
+        if(evt) openEventModal({event:evt});
+      });
+    });
+    document.querySelectorAll(".hour-line").forEach(function(elx){
+      elx.addEventListener("click", function(){
+        var date = elx.getAttribute("data-date");
+        var hour = +elx.getAttribute("data-hour");
+        openEventModal({prefill:{date:date, start:String(hour).padStart(2,'0')+":00", end:String(hour).padStart(2,'0')+":30"}});
+      });
+    });
+    document.querySelectorAll(".month-cell").forEach(function(elx){
+      elx.addEventListener("click", function(ev){
+        if(ev.target.closest(".month-evt")) return;
+        var date = elx.getAttribute("data-date");
+        state.cursor = parseISO(date);
+        state.view = "day";
+        renderMain();
+      });
+    });
+  } else if(state.tab==="modules"){
+    wireModuleEvents();
+  } else if(state.tab==="inbox"){
+    wireInboxEvents();
+  }
+}
+
+function shiftCursor(dir){
+  var dt = new Date(state.cursor);
+  if(state.view==="month") dt.setMonth(dt.getMonth()+dir);
+  else if(state.view==="week") dt.setDate(dt.getDate()+dir*7);
+  else dt.setDate(dt.getDate()+dir);
+  state.cursor = dt;
+  renderMain();
+}
+
+/* =========================================================
+   TRAINING MODULES
+   ========================================================= */
+var MODULES = [
+  {
+    id:1, title:"Basic Calendar Management",
+    summary:"Create and fully configure a professional meeting.",
+    tasks:[
+      {id:"t1-1", type:"auto", points:20,
+       title:"Create a fully-configured team meeting",
+       desc:"Create a team meeting for Monday, Jan 12 at 10:00 AM EST. Category: Internal. Add at least one attendee, a short agenda, a meeting link, and a reminder.",
+       hint:"Click the 10:00 AM slot on Monday in Week or Day view, or use \u201c+ New Event.\u201d Fill in every field \u2014 attendees, description, meeting link, and reminder \u2014 before saving.",
+       check:function(){
+         var e = EVENTS.find(function(e){return !e.isSeed && e.category==="internal" && e.date===d(0) && e.start==="10:00";});
+         if(!e) return {pass:false, detail:"No matching internal meeting found on Monday at 10:00 AM."};
+         var missing=[];
+         if(!e.attendees.length) missing.push("attendees");
+         if(!e.description) missing.push("agenda/description");
+         if(!e.meetingLink) missing.push("meeting link");
+         if(!e.reminder || e.reminder==="none") missing.push("reminder");
+         if(missing.length) return {pass:false, detail:"Found the meeting, but it's missing: "+missing.join(", ")+"."};
+         return {pass:true, detail:"Nice work \u2014 the meeting has attendees, an agenda, a meeting link, and a reminder."};
+       }}
+    ]
+  },
+  {
+    id:2, title:"Scheduling & Rescheduling",
+    summary:"Fix Tuesday's conflicts and book a discovery call the right way.",
+    tasks:[
+      {id:"t2-1", type:"auto", points:15,
+       title:"Resolve Tuesday's double booking",
+       desc:"On Tuesday Jan 13, \u201cSarah's Personal Trainer\u201d (2:00\u20133:00 PM) and \u201cBudget Review\u201d (2:15\u20132:45 PM) overlap. Reschedule one of them so there is no overlap and at least a 15-minute buffer.",
+       hint:"Open either event, change its time, and save. A common fix: move Budget Review to a free slot like 3:15\u20133:45 PM.",
+       check:function(){
+         var issues = analyzeDay(d(1)).filter(function(i){return i.type==="overlap"||i.type==="buffer";});
+         return issues.length===0 ? {pass:true, detail:"Tuesday now has no overlaps or buffer violations."} : {pass:false, detail:"Tuesday still has a conflict: "+issues[0].msg};
+       }},
+      {id:"t2-2", type:"auto", points:15,
+       title:"Schedule a client discovery call",
+       desc:"Find an available slot on Tuesday and schedule a 60-minute Client Discovery Call that respects all of Sarah's preferences (not before 9 AM, not over lunch, 15-min buffer, has an agenda).",
+       hint:"Look at Tuesday's open slots after lunch. Create a Client category event, 60 minutes long, with an agenda filled in.",
+       check:function(){
+         var e = EVENTS.find(function(e){return !e.isSeed && e.category==="client" && e.date===d(1) && (toMin(e.end)-toMin(e.start))===60 && e.description;});
+         if(!e) return {pass:false, detail:"No new 60-minute client meeting with an agenda found on Tuesday."};
+         var issues = analyzeDay(d(1)).filter(function(i){return (i.id===e.id||i.id2===e.id);});
+         if(issues.length) return {pass:false, detail:"That meeting still triggers a rule violation: "+issues[0].msg};
+         return {pass:true, detail:"Great \u2014 the discovery call is booked cleanly with an agenda and no rule violations."};
+       }}
+    ]
+  },
+  {
+    id:3, title:"Time Zone Management",
+    summary:"Convert between EST, WAT, GMT and PST without mistakes.",
+    tasks:[
+      {id:"t3-1", type:"quiz", points:10,
+       title:"EST \u2192 WAT conversion",
+       desc:"Sarah wants to meet at 3:00 PM EST. What time is that for you in Lagos (WAT)?",
+       options:["8:00 PM WAT","9:00 PM WAT","10:00 AM WAT","2:00 PM WAT"],
+       correct:0},
+      {id:"t3-2", type:"quiz", points:10,
+       title:"GMT scheduling",
+       desc:"A London partner is only free at 1:00 PM GMT. What time is that in Sarah's EST?",
+       options:["6:00 AM EST","8:00 AM EST","1:00 PM EST","9:00 AM EST"],
+       correct:1},
+      {id:"t3-3", type:"quiz", points:10,
+       title:"PST comparison",
+       desc:"A vendor in Los Angeles (PST) proposes 7:00 AM PST for a call. What time is that in EST \u2014 and is it allowed under Sarah's rules?",
+       options:["9:00 AM EST \u2014 allowed","10:00 AM EST \u2014 allowed","4:00 AM EST \u2014 not allowed (before 9 AM)","10:00 AM EST \u2014 not allowed"],
+       correct:1}
+    ]
+  },
+  {
+    id:4, title:"Executive Assistant Simulation",
+    summary:"Turn a client request from the Inbox into a properly booked meeting.",
+    tasks:[
+      {id:"t4-1", type:"auto", points:20,
+       title:"Book John from ABC Company",
+       desc:"Read the message from Sarah in the Client Inbox, then schedule the meeting with John (ABC Company) on Tuesday or Thursday afternoon, with all relevant details filled in.",
+       hint:"Go to Client Inbox \u2192 open Sarah's message. John is free Tuesday or Thursday afternoon. Thursday afternoon is mostly open. Book a 60-minute Client meeting, add John/ABC Company as an attendee, and add an agenda.",
+       check:function(){
+         var candidates = EVENTS.filter(function(e){
+           return !e.isSeed && e.category==="client" &&
+             (e.date===d(1)||e.date===d(3)) &&
+             toMin(e.start)>=toMin("12:30") &&
+             e.attendees.some(function(a){return /john/i.test(a) || /abc/i.test(a);});
+         });
+         if(!candidates.length) return {pass:false, detail:"No afternoon client meeting found with John / ABC Company as an attendee."};
+         var e = candidates[0];
+         var issues = analyzeDay(e.date).filter(function(i){return i.id===e.id||i.id2===e.id;});
+         if(issues.length) return {pass:false, detail:"Meeting found, but it violates a rule: "+issues[0].msg};
+         if(!e.description) return {pass:false, detail:"Meeting found, but it still needs an agenda."};
+         return {pass:true, detail:"John's meeting is booked at a valid time with an agenda \u2014 well done."};
+       }}
+    ]
+  },
+  {
+    id:5, title:"Calendar Audit",
+    summary:"Spot every scheduling mistake hiding in Wednesday's messy calendar.",
+    tasks:[
+      {id:"t5-1", type:"quiz", multi:true, points:25,
+       title:"Audit Wednesday, Jan 14",
+       desc:"Review Wednesday's calendar (Week or Day view). Select every issue that is actually present that day.",
+       options:[
+         "A meeting starts before 9:00 AM EST",
+         "A meeting is scheduled during the protected lunch break",
+         "Two meetings run back-to-back with no 15-minute buffer",
+         "The day exceeds the 5-meeting daily limit",
+         "A meeting has no agenda/description",
+         "A meeting is missing on Wednesday entirely (day is empty)"
+       ],
+       correctSet:[0,1,2,3,4]}
+    ]
+  },
+  {
+    id:6, title:"Recurring Schedule Management",
+    summary:"Set up a recurring internal meeting correctly.",
+    tasks:[
+      {id:"t6-1", type:"auto", points:15,
+       title:"Create a recurring weekly team meeting",
+       desc:"Create a new Internal meeting titled with \u201cTeam\u201d in the name, set it to repeat Weekly, and give it an agenda.",
+       hint:"Use \u201c+ New Event,\u201d set Category to Internal, Recurrence to Weekly, and fill in the agenda field.",
+       check:function(){
+         var e = EVENTS.find(function(e){return !e.isSeed && e.category==="internal" && e.recurring==="weekly" && /team/i.test(e.title);});
+         if(!e) return {pass:false, detail:"No weekly-recurring internal meeting with \u201cTeam\u201d in the title was found."};
+         if(!e.description) return {pass:false, detail:"Found the recurring meeting, but it still needs an agenda."};
+         return {pass:true, detail:"Recurring weekly team meeting is set up correctly."};
+       }}
+    ]
+  },
+  {
+    id:7, title:"Real Client Management Challenge",
+    summary:"Final assessment \u2014 manage Sarah's whole week like a real VA.",
+    tasks:[
+      {id:"t7-1", type:"auto", points:25,
+       title:"Deliver a conflict-free week",
+       desc:"Across the whole simulation week (Mon\u2013Sun), resolve every double-booking and buffer violation you can find.",
+       hint:"Switch to Week view and check each day. Use analyzeDay-style thinking: no overlaps, always 15 minutes between meetings.",
+       check:function(){
+         var allIssues = [];
+         for(var i=0;i<7;i++){ allIssues = allIssues.concat(analyzeDay(d(i)).filter(function(is){return is.type==="overlap"||is.type==="buffer";})); }
+         return allIssues.length===0 ? {pass:true, detail:"No overlaps or buffer violations remain anywhere in the week."} : {pass:false, detail:allIssues.length+" conflict(s) remain, e.g.: "+allIssues[0].msg};
+       }},
+      {id:"t7-2", type:"auto", points:15,
+       title:"No day exceeds the meeting cap",
+       desc:"Make sure no single day in the simulation week has more than 5 meetings.",
+       hint:"Wednesday is the worst offender \u2014 move or delete meetings until it's at or under 5.",
+       check:function(){
+         var over = [];
+         for(var i=0;i<7;i++){ if(analyzeDay(d(i)).some(function(is){return is.type==="overload";})) over.push(DOW_FULL[i]); }
+         return over.length===0 ? {pass:true, detail:"Every day is within the 5-meeting limit."} : {pass:false, detail:"Still over the limit on: "+over.join(", ")};
+       }},
+      {id:"t7-3", type:"auto", points:10,
+       title:"Protect Friday afternoon",
+       desc:"Make sure no client or internal meeting is scheduled on Friday after 2:00 PM EST.",
+       hint:"Move or cancel \u201cCall with Horizon Media\u201d (currently 3\u20134 PM Friday), or reschedule it earlier in the week.",
+       check:function(){
+         var issues = analyzeDay(d(4)).filter(function(i){return i.type==="friday";});
+         return issues.length===0 ? {pass:true, detail:"Friday afternoon is protected \u2014 no late meetings."} : {pass:false, detail:issues[0].msg};
+       }}
+    ]
+  }
+];
+
+function totalPossiblePoints(){
+  var t=0; MODULES.forEach(function(m){ m.tasks.forEach(function(tk){ t+=tk.points; }); });
+  return t;
+}
+function earnedPoints(){
+  var t=0;
+  MODULES.forEach(function(m){
+    m.tasks.forEach(function(tk){
+      var r = state.taskResults[tk.id];
+      if(r && r.pass) t+=tk.points;
+    });
+  });
+  return t;
+}
+function modulePercent(m){
+  var total=0, earned=0;
+  m.tasks.forEach(function(tk){ total+=tk.points; var r=state.taskResults[tk.id]; if(r&&r.pass) earned+=tk.points; });
+  return total? Math.round(earned/total*100):0;
+}
+
+function modulesHTML(){
+  var html = '<div class="panel-title">Training Modules</div>'+
+    '<div class="panel-sub">Work through each module. '+(state.mode==="beginner"?"Beginner mode shows hints and step-by-step guidance.":"Advanced mode hides hints \u2014 make your own scheduling decisions.")+'</div>';
+
+  html += MODULES.map(function(m){
+    var pct = modulePercent(m);
+    var open = state.openModuleId===m.id;
+    return '<div class="module-card '+(open?"open":"")+'" data-modid="'+m.id+'">'+
+      '<div class="module-head" data-headid="'+m.id+'">'+
+        '<div class="module-num">'+m.id+'</div>'+
+        '<div class="module-head-text"><div class="mt">'+m.title+'</div><div class="ms">'+m.summary+'</div></div>'+
+        '<div class="module-score">'+pct+'%</div>'+
+        '<div class="module-chevron">\u203a</div>'+
+      '</div>'+
+      '<div class="module-body">'+ m.tasks.map(function(tk){ return taskHTML(tk); }).join("") +'</div>'+
+    '</div>';
+  }).join("");
+
+  return html;
+}
+
+function taskHTML(tk){
+  var r = state.taskResults[tk.id];
+  var passed = r && r.pass;
+  var body = '<div class="task-block '+(passed?"passed":"")+'" data-taskid="'+tk.id+'">'+
+    '<div class="task-title">'+(passed?"\u2705":"\u2b1c")+' '+esc(tk.title)+' <span style="margin-left:auto;font-weight:600;color:var(--muted);font-size:11px;">'+tk.points+' pts</span></div>'+
+    '<div class="task-desc">'+esc(tk.desc)+'</div>';
+
+  if(state.mode==="beginner" && tk.hint){
+    body += '<div class="hint">\ud83d\udca1 Hint: '+esc(tk.hint)+'</div>';
+  }
+
+  if(tk.type==="auto"){
+    body += '<button class="btn btn-sm btn-primary" data-checktask="'+tk.id+'">Check My Work</button>';
+  } else if(tk.type==="quiz" && !tk.multi){
+    body += tk.options.map(function(opt,i){
+      var checked = state.quizAnswers[tk.id]===i;
+      return '<label class="quiz-opt"><input type="radio" name="q_'+tk.id+'" value="'+i+'" '+(checked?"checked":"")+'> '+esc(opt)+'</label>';
+    }).join("");
+    body += '<button class="btn btn-sm btn-primary" data-checktask="'+tk.id+'">Submit Answer</button>';
+  } else if(tk.type==="quiz" && tk.multi){
+    var sel = state.quizAnswers[tk.id] || [];
+    body += tk.options.map(function(opt,i){
+      var checked = sel.indexOf(i)>-1;
+      return '<label class="quiz-opt"><input type="checkbox" data-multi="'+tk.id+'" value="'+i+'" '+(checked?"checked":"")+'> '+esc(opt)+'</label>';
+    }).join("");
+    body += '<button class="btn btn-sm btn-primary" data-checktask="'+tk.id+'">Submit Answers</button>';
+  }
+
+  if(r){
+    body += '<div class="task-feedback '+(r.pass?"ok":"no")+'">'+(r.pass?"\u2713 ":"\u2717 ")+esc(r.detail)+'</div>';
+  }
+  body += '</div>';
+  return body;
+}
+
+function wireModuleEvents(){
+  document.querySelectorAll("[data-headid]").forEach(function(elx){
+    elx.onclick = function(){
+      var id = +elx.getAttribute("data-headid");
+      state.openModuleId = (state.openModuleId===id)? null : id;
+      renderMain();
+    };
+  });
+  document.querySelectorAll("[data-multi]").forEach(function(elx){
+    elx.onchange = function(){
+      var tid = elx.getAttribute("data-multi");
+      var arr = state.quizAnswers[tid] || [];
+      var v = +elx.value;
+      if(elx.checked){ if(arr.indexOf(v)<0) arr.push(v); } else { arr = arr.filter(function(x){return x!==v;}); }
+      state.quizAnswers[tid] = arr;
+    };
+  });
+  document.querySelectorAll('input[type=radio][name^="q_"]').forEach(function(elx){
+    elx.onchange = function(){
+      var tid = elx.name.slice(2);
+      state.quizAnswers[tid] = +elx.value;
+    };
+  });
+  document.querySelectorAll("[data-checktask]").forEach(function(elx){
+    elx.onclick = function(){
+      var tid = elx.getAttribute("data-checktask");
+      var tk = findTask(tid);
+      var result;
+      if(tk.type==="auto"){
+        result = tk.check();
+      } else if(tk.type==="quiz" && !tk.multi){
+        var ans = state.quizAnswers[tid];
+        if(ans===undefined){ alert("Please select an answer first."); return; }
+        result = ans===tk.correct ? {pass:true, detail:"Correct!"} : {pass:false, detail:"Not quite \u2014 review the time zone math and try again."};
+      } else if(tk.type==="quiz" && tk.multi){
+        var sel = (state.quizAnswers[tid]||[]).slice().sort();
+        var correct = tk.correctSet.slice().sort();
+        var match = sel.length===correct.length && sel.every(function(v,i){return v===correct[i];});
+        result = match ? {pass:true, detail:"Correct \u2014 you caught every real issue."} : {pass:false, detail:"Not quite right \u2014 double-check Wednesday's calendar and try again."};
+      }
+      state.taskResults[tid] = result;
+      addLog((result.pass?"Passed":"Attempted")+" task: "+tk.title);
+      renderMain();
+    };
+  });
+}
+function findTask(id){
+  for(var i=0;i<MODULES.length;i++){
+    for(var j=0;j<MODULES[i].tasks.length;j++){
+      if(MODULES[i].tasks[j].id===id) return MODULES[i].tasks[j];
+    }
+  }
+  return null;
+}
+function refreshTaskAutoChecks(){
+  // silently re-evaluate already-attempted auto tasks so status stays accurate
+  MODULES.forEach(function(m){
+    m.tasks.forEach(function(tk){
+      if(tk.type==="auto" && state.taskResults[tk.id]){
+        state.taskResults[tk.id] = tk.check();
+      }
+    });
+  });
+}
+
+/* =========================================================
+   CLIENT INBOX
+   ========================================================= */
+var INBOX = [
+  {id:"m1", from:"Sarah Williams", subject:"Please schedule John from ABC Company",
+   body:"Hi! Please schedule a meeting with John from ABC Company sometime next week. He said he's available Tuesday or Thursday afternoon. Please pick the best time, add him as an attendee, and include a short agenda \u2014 we'll be discussing a potential partnership. Thanks!"},
+  {id:"m2", from:"Sarah Williams", subject:"Wednesday looks packed \u2014 can you take a look?",
+   body:"My Wednesday feels really overloaded and I'm worried something's double-booked. Can you review it and clean it up? Use the Calendar Audit module if you want a checklist."},
+  {id:"m3", from:"Sarah Williams", subject:"Weekly team meeting \u2014 make it recurring",
+   body:"Can you set up our team meeting to repeat every week going forward instead of me asking you to add it manually each time? Internal meeting, needs a short agenda."},
+  {id:"m4", from:"Sarah Williams", subject:"This week's full schedule \u2014 final check",
+   body:"Before the week starts, can you do a full pass on my calendar? Make sure nothing overlaps, no day has more than 5 meetings, and Friday afternoon stays free after 2 PM. This is the final check before I head into the week \u2014 treat it like the real thing."}
+];
+
+function inboxHTML(){
+  var html = '<div class="panel-title">Client Inbox</div><div class="panel-sub">Messages from Sarah Williams \u2014 open one and turn it into calendar action.</div>';
+  html += '<div class="inbox-list">'+ INBOX.map(function(m){
+    var read = state.inboxReadIds[m.id];
+    return '<div class="inbox-item '+(read?"read":"")+'" data-inboxid="'+m.id+'">'+
+      '<div class="inbox-avatar">SW</div>'+
+      '<div><div class="inbox-from">'+esc(m.from)+'</div><div class="inbox-subject">'+esc(m.subject)+'</div></div>'+
+    '</div>';
+  }).join("") + '</div>';
+
+  if(state.activeInboxId){
+    var m = INBOX.find(function(x){return x.id===state.activeInboxId;});
+    html += '<div class="inbox-detail"><div style="font-weight:700;font-size:14px;margin-bottom:6px;">'+esc(m.subject)+'</div>'+
+      '<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">From '+esc(m.from)+'</div>'+
+      '<div style="font-size:13.5px;line-height:1.6;">'+esc(m.body)+'</div>'+
+      '<div style="margin-top:14px;"><button class="btn btn-primary btn-sm" id="gotoCal">Open Calendar</button></div>'+
+    '</div>';
+  }
+  return html;
+}
+function wireInboxEvents(){
+  document.querySelectorAll("[data-inboxid]").forEach(function(elx){
+    elx.onclick = function(){
+      var id = elx.getAttribute("data-inboxid");
+      state.inboxReadIds[id]=true;
+      state.activeInboxId=id;
+      renderMain();
+    };
+  });
+  var goto = document.getElementById("gotoCal");
+  if(goto) goto.onclick = function(){ setTab("calendar"); };
+}
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+function progressHTML(){
+  var earned = earnedPoints(), total = totalPossiblePoints();
+  var pct = total? Math.round(earned/total*100):0;
+  var r=52, c=2*Math.PI*r;
+  var offset = c - (pct/100)*c;
+  var level = pct>=90?"VA-Ready \u2b50":pct>=70?"Strong Progress":pct>=40?"Building Skills":"Just Getting Started";
+
+  var html = '<div class="panel-title">My Progress</div><div class="panel-sub">Your overall readiness score across all training modules.</div>';
+
+  html += '<div class="gauge-wrap">'+
+    '<svg width="130" height="130" viewBox="0 0 130 130">'+
+      '<circle cx="65" cy="65" r="'+r+'" stroke="#eef2f9" stroke-width="12" fill="none"/>'+
+      '<circle cx="65" cy="65" r="'+r+'" stroke="#0b8f8f" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" transform="rotate(-90 65 65)"/>'+
+      '<text x="65" y="60" text-anchor="middle" class="gauge-num" style="font-size:24px;">'+pct+'%</text>'+
+      '<text x="65" y="78" text-anchor="middle" class="gauge-num" style="font-size:10px;fill:#5f6478;">'+earned+' / '+total+' pts</text>'+
+    '</svg>'+
+    '<div><div style="font-family:var(--font-display);font-weight:700;font-size:17px;">'+level+'</div>'+
+      '<div style="color:var(--muted);font-size:13px;max-width:340px;">Complete tasks across all 7 modules to raise your score. Switch to Advanced Mode once you\u2019re comfortable to practice without hints.</div></div>'+
+  '</div>';
+
+  html += '<div class="progress-modules">'+ MODULES.map(function(m){
+    var pctm = modulePercent(m);
+    return '<div class="pm-card"><div class="pm-title">Module '+m.id+': '+m.title+'</div>'+
+      '<div class="pm-bar"><div class="pm-bar-fill" style="width:'+pctm+'%;"></div></div>'+
+      '<div class="pm-pct">'+pctm+'% complete</div></div>';
+  }).join("") + '</div>';
+
+  html += '<div style="margin-top:20px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">Activity Log</div>'+
+    '<div class="log-feed">'+ (state.log.length? state.log.map(function(l){return '<div class="lg-line"><span class="lg-time">'+l.t+'</span>'+esc(l.msg)+'</div>';}).join("") : '<div class="empty-note">No activity yet \u2014 create or edit an event to get started.</div>') +'</div></div>';
+
+  return html;
+}
+
+/* =========================================================
+   TOP-LEVEL WIRING
+   ========================================================= */
+function setTab(tab){
+  state.tab = tab;
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("data-tab")===tab);
+  });
+  renderMain();
+}
+
+document.getElementById("mainTabs").addEventListener("click", function(e){
+  var btn = e.target.closest(".tab-btn");
+  if(btn) setTab(btn.getAttribute("data-tab"));
+});
+
+document.getElementById("modeSwitch").addEventListener("click", function(){
+  state.mode = state.mode==="beginner" ? "advanced" : "beginner";
+  document.getElementById("modeSwitch").classList.toggle("on", state.mode==="advanced");
+  document.getElementById("modeLabel").textContent = state.mode==="beginner"?"Beginner Mode":"Advanced Mode";
+  if(state.tab==="modules") renderMain();
+});
+
+document.getElementById("newEventBtn").addEventListener("click", function(){
+  openEventModal({prefill:{date:isoDate(state.cursor)}});
+});
+
+document.getElementById("modalBackdrop").addEventListener("click", function(e){
+  if(e.target.id==="modalBackdrop") closeModal();
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+renderSidebar();
+renderMain();
+addLog("Welcome to the SMK Calendar Management Practice Lab.");
+
+})();
+</script>
+</body>
+</html>
